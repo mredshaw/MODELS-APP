@@ -24,7 +24,7 @@ print(demand_refinement_df.head())
 
 
 
-# Decision Variables
+######################################################### DECISION VARIABLES ##############################################################################
 
 # Create decision variables for shipping from production facilities to refinement centers
 # x[p, r] represents the quantity shipped from production facility p to refinement center r
@@ -82,7 +82,7 @@ adjusted_rewards_total_cost = total_cost - direct_shipment_reward * gb.quicksum(
 #model.setObjective(adjusted_rewards_total_cost, GRB.MINIMIZE)
 
 
-# Constraints
+######################################################### CONSTRAINTS ##############################################################################
 
 # Supply constraints for direct production facilities
 for facility in production_facilities:
