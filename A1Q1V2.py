@@ -51,8 +51,6 @@ transship_to_refin_costs_dict = {(row['TransshipmentHub'], row['RefinementCenter
 z = model.addVars(transship_refin_tuples, obj=transship_to_refin_costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Transshipment_to_Refinement")
 
 
-
-
 # Objective Function
 
 # The objective is to minimize the total transportation cost
@@ -120,9 +118,6 @@ tranship_ratio = 0.2  # Proportion of total shipments that can be transshipped
 #model.addConstr(gb.quicksum(y[p, t] for p, t in prod_trans_tuples) <= tranship_ratio * 
 #                (gb.quicksum(x[p, r] for p, r in prod_refin_tuples) + gb.quicksum(y[p, t] for p, t in prod_trans_tuples)),name="Transshipment_Ratio_Constraint")
 #############################################################################################################################################################
-
-
-
 
 
 
