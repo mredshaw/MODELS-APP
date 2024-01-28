@@ -20,8 +20,6 @@ cash_balance = model.addVars(4, lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance")
 
 ##################################################### OBJECTIVE FUNCTION #####################################################################
 
-# Minimize the total repayment amount
-# Objective Function
 total_repayment = (
     # Repayments for May
     borrow[0, 0] * (1 + 0.0175) + borrow[0, 1] * (1 + 0.0225) + borrow[0, 2] * (1 + 0.0275) +  # All loan options are available in May
@@ -32,15 +30,14 @@ total_repayment = (
     # Repayments for July
     borrow[2, 0] * (1 + 0.0175)  # Only 1 month loan option is available in July
 )
-
 model.setObjective(total_repayment, GRB.MINIMIZE)
 
 ##################################################### CONSTRAINTS #####################################################################
 
 # Add the cash balance constraints
-model.addConstr(cash_balance[0] == initial_cash + revenues[0] - expenses[0], "Cash_Balance_May")
-model.addConstr(cash_balance[1] == cash_balance[0] + revenues[1] - expenses[1] - borrow[0, 0] * (1 + 0.0175), "Cash_Balance_June")
-model.addConstr(cash_balance[2] == cash_balance[1] + revenues[2] - expenses[2] - borrow[1, 0] * (1 + 0.0175) - borrow[0, 1] * (1 + 0.0225), "Cash_Balance_July")
+model.addConstr(cash_balance[0] == initial_cash + revenues[0] - expenses[0] + borrow[0, 0] + borrow[0, 1] + borrow[0, 2], "Cash_Balance_May")
+model.addConstr(cash_balance[1] == cash_balance[0] + revenues[1] - expenses[1] - borrow[0, 0] * (1 + 0.0175) + borrow[1, 0] + borrow[1, 1], "Cash_Balance_June")
+model.addConstr(cash_balance[2] == cash_balance[1] + revenues[2] - expenses[2] - borrow[1, 0] * (1 + 0.0175) - borrow[0, 1] * (1 + 0.0225) + borrow[2, 0], "Cash_Balance_July")
 model.addConstr(cash_balance[3] == cash_balance[2] + revenues[3] - expenses[3] - borrow[2, 0] * (1 + 0.0175) - borrow[1, 1] * (1 + 0.0225) - borrow[0, 2] * (1 + 0.0275), "Cash_Balance_August")
 
 # Borrowing limits constraints
@@ -89,8 +86,3 @@ if model.status == GRB.OPTIMAL:
         print(f"{var.varName}: {var.X}")
 else:
     print("Model not solved to optimality")
-
-
-
-
-
