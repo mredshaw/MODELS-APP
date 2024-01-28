@@ -21,7 +21,19 @@ cash_balance = model.addVars(4, lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance")
 ##################################################### OBJECTIVE FUNCTION #####################################################################
 
 # Minimize the total repayment amount
-model.setObjective(sum(borrow[m, t] * (1 + interest_rates[t]) for m in range(4) for t in range(3)), GRB.MINIMIZE)
+# Objective Function
+total_repayment = (
+    # Repayments for May
+    borrow[0, 0] * (1 + 0.0175) + borrow[0, 1] * (1 + 0.0225) + borrow[0, 2] * (1 + 0.0275) +  # All loan options are available in May
+
+    # Repayments for June
+    borrow[1, 0] * (1 + 0.0175) + borrow[1, 1] * (1 + 0.0225) +  # only 1 month and 2 month loan options are available in June
+
+    # Repayments for July
+    borrow[2, 0] * (1 + 0.0175)  # Only 1 month loan option is available in July
+)
+
+model.setObjective(total_repayment, GRB.MINIMIZE)
 
 ##################################################### CONSTRAINTS #####################################################################
 
