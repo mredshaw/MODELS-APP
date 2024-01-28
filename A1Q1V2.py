@@ -55,12 +55,25 @@ total_cost = gb.quicksum(x[p, r] * costs_dict[p, r] for p, r in prod_refin_tuple
 model.setObjective(total_cost, GRB.MINIMIZE)
 
 
-#Adding a cost penalty for transhipments. Comment out when not using.
+#Adding a cost penalty for transhipments. Comment out objective function when not using.
 ########################################################################################################
-transshipment_penalty = 0.5
-penalized_total_cost = total_cost + transshipment_penalty * gb.quicksum(y[p, t] for p, t in prod_trans_tuples)
-#model.setObjective(penalized_total_cost, GRB.MINIMIZE)
+# Define the penalty for transshipments and the reward for direct shipments
+transshipment_penalty = 0.5  # Cost added per unit of transshipped oil
+
+adjusted_total_cost = total_cost + transshipment_penalty * gb.quicksum(y[p, t] for p, t in prod_trans_tuples)
+model.setObjective(adjusted_total_cost, GRB.MINIMIZE)
 ########################################################################################################
+
+
+#Adding a reward for facilities in North America. Comment out objective function when not using.
+########################################################################################################
+# Define the reward for certain direct shipments
+direct_shipment_reward = 0.3  # Cost reduced per unit of directly shipped oil from facilities 1-15
+# Apply rewards to x variables for facilities 1-15
+adjusted_rewards_total_cost = total_cost - direct_shipment_reward * gb.quicksum(x[p, r] for p, r in prod_refin_tuples if p <= 15)
+#model.setObjective(adjusted_rewards_total_cost, GRB.MINIMIZE)
+
+# ... [rest of your code for constraints, optimization, and result printing] ...
 
 # Constraints
 
@@ -95,9 +108,10 @@ for center in refinement_centers:
 #############################################################################################################################################################
 tranship_ratio = 0.2  # Proportion of total shipments that can be transshipped
 #model.addConstr(
-#    gb.quicksum(y[p, t] for p, t in prod_trans_tuples) <= tranship_ratio * (gb.quicksum(x[p, r] for p, r in prod_refin_tuples) + gb.quicksum(y[p, t] for p, t in prod_trans_tuples)),
-#    name="Transshipment_Ratio_Constraint"
-#)
+#    gb.quicksum(y[p, t] for p, t in prod_trans_tuples) <= tranship_ratio * 
+#    (gb.quicksum(x[p, r] for p, r in prod_refin_tuples) + 
+#     gb.quicksum(y[p, t] for p, t in prod_trans_tuples)),
+#    name="Transshipment_Ratio_Constraint")
 #############################################################################################################################################################
 
 
@@ -141,19 +155,3 @@ else:
     print("Model has not been solved to optimality. Cannot perform sensitivity analysis.")
 
 
-
-
-if model.status == GRB.OPTIMAL:
-    # Print the SARHSLow and SARHSUp for y variables
-    print("Sensitivity Analysis for y Variables (Transshipment from Production to Hub):")
-    for p, t in prod_trans_tuples:
-        var = y[p, t]
-        print(f"Variable y[{p},{t}]: SARHSLow = {var.SARHSLow}, SARHSUp = {var.SARHSUp}")
-
-    # Print the SARHSLow and SARHSUp for z variables
-    print("\nSensitivity Analysis for z Variables (Transshipment from Hub to Refinement):")
-    for t, r in transship_refin_tuples:
-        var = z[t, r]
-        print(f"Variable z[{t},{r}]: SARHSLow = {var.SARHSLow}, SARHSUp = {var.SARHSUp}")
-else:
-    print("Model has not been solved to optimality. Cannot perform sensitivity analysis.")
