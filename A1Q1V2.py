@@ -5,8 +5,8 @@ import pandas as pd
 model = gb.Model("Can2Oil Transshipment Problem")
 
 #Loading the data from CSV files
-costs_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Refinement.csv')
-costs_transshipment_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Transshipment.csv')
+costs_prod_to_refine_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Refinement.csv')
+costs_prod_to_transship_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Transshipment.csv')
 costs_transshipment_to_refinement_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Transshipment_to_Refinement.csv')
 capacity_direct_production_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Direct_Production_Facilities.csv')
 capacity_transship_production_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Transship_Production_Facilities.csv')
@@ -14,8 +14,8 @@ capacity_transship_distribution_df = pd.read_csv('/Users/mikeredshaw/Documents/S
 demand_refinement_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Refinement_Demand.csv')
 
 #Print rows from CSV to check data is loaded correctly
-print(costs_df.head())
-print(costs_transshipment_df.head())
+print(costs_prod_to_refine_df.head())
+print(costs_prod_to_transship_df.head())
 print(costs_transshipment_to_refinement_df.head())
 print(capacity_direct_production_df.head())
 print(capacity_transship_production_df.head())
@@ -29,18 +29,18 @@ print(demand_refinement_df.head())
 # Create decision variables for shipping from production facilities to refinement centers
 # x[p, r] represents the quantity shipped from production facility p to refinement center r
 capacity_dict_direct = capacity_direct_production_df.set_index('ProductionFacility')['Capacity'].to_dict()
-production_facilities = costs_df['ProductionFacility'].unique()
-refinement_centers = costs_df['RefinementCenter'].unique()
+production_facilities = costs_prod_to_refine_df['ProductionFacility'].unique()
+refinement_centers = costs_prod_to_refine_df['RefinementCenter'].unique()
 prod_refin_tuples = gb.tuplelist((p, r) for p in production_facilities for r in refinement_centers)
-costs_dict = {(row['ProductionFacility'], row['RefinementCenter']): row['Cost'] for _, row in costs_df.iterrows()}
+costs_dict = {(row['ProductionFacility'], row['RefinementCenter']): row['Cost'] for _, row in costs_prod_to_refine_df.iterrows()}
 x = model.addVars(prod_refin_tuples, obj=costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Production_to_Refinement")
 
 # Create decision variables for shipping from production facilities to Transhipment hubs
 # x[p, t] represents the quantity shipped from production facility p to Transhipment hub t
-production_facilities_transship = costs_transshipment_df['ProductionFacility'].unique()
-transshipment_hubs = costs_transshipment_df['TransshipmentHub'].unique()
+production_facilities_transship = costs_prod_to_transship_df['ProductionFacility'].unique()
+transshipment_hubs = costs_prod_to_transship_df['TransshipmentHub'].unique()
 prod_trans_tuples = gb.tuplelist((p, t) for p in production_facilities_transship for t in transshipment_hubs)
-trans_costs_dict = {(row['ProductionFacility'], row['TransshipmentHub']): row['Cost'] for _, row in costs_transshipment_df.iterrows()}
+trans_costs_dict = {(row['ProductionFacility'], row['TransshipmentHub']): row['Cost'] for _, row in costs_prod_to_transship_df.iterrows()}
 y = model.addVars(prod_trans_tuples, obj=trans_costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Production_to_Transshipment")
 
 # Create decision variables for shipping from Transhipment hubs to Refinement Centers
