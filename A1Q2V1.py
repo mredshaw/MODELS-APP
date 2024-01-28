@@ -7,8 +7,7 @@ model = gb.Model("Sunnyshore Bay Financial Planning")
 # Monthly revenues and expenses
 revenues = [180000, 260000, 420000, 580000]
 expenses = [300000, 400000, 350000, 200000]
-
-# Initial cash balance
+interest_rates = [0.0175, 0.0225, 0.0275]
 initial_cash = 140000
 
 ##################################################### DECISION VARIABLES #####################################################################
@@ -18,8 +17,6 @@ borrow = model.addVars(4, 3, lb=0, vtype=GRB.CONTINUOUS, name="Borrow")
 
 # Cash balance at the end of each month
 cash_balance = model.addVars(4, lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance")
-
-interest_rates = [0.0175, 0.0225, 0.0275]
 
 ##################################################### OBJECTIVE FUNCTION #####################################################################
 
