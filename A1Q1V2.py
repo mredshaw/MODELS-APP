@@ -126,3 +126,34 @@ proportion_transshipped = total_transshipped / total_transported if total_transp
 print("Total Transshipped Amount: ", total_transshipped)
 print("Total Transported Amount: ", total_transported)
 print("Proportion of Canola Oil Transshipped: ", proportion_transshipped)
+
+
+
+if model.status == GRB.OPTIMAL:
+    # Print the high and low range of optimality for the transshipment variables
+    for p, t in prod_trans_tuples:
+        var = y[p, t]
+        if var.X > 0:  # Check if the variable is used in the solution
+            print(f"Variable y[{p},{t}] transshipped amount: {var.X}")
+            print(f"  Low range of optimality: {var.SAObjLow}")
+            print(f"  High range of optimality: {var.SAObjUp}")
+else:
+    print("Model has not been solved to optimality. Cannot perform sensitivity analysis.")
+
+
+
+
+if model.status == GRB.OPTIMAL:
+    # Print the SARHSLow and SARHSUp for y variables
+    print("Sensitivity Analysis for y Variables (Transshipment from Production to Hub):")
+    for p, t in prod_trans_tuples:
+        var = y[p, t]
+        print(f"Variable y[{p},{t}]: SARHSLow = {var.SARHSLow}, SARHSUp = {var.SARHSUp}")
+
+    # Print the SARHSLow and SARHSUp for z variables
+    print("\nSensitivity Analysis for z Variables (Transshipment from Hub to Refinement):")
+    for t, r in transship_refin_tuples:
+        var = z[t, r]
+        print(f"Variable z[{t},{r}]: SARHSLow = {var.SARHSLow}, SARHSUp = {var.SARHSUp}")
+else:
+    print("Model has not been solved to optimality. Cannot perform sensitivity analysis.")
