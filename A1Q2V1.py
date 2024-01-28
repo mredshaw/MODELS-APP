@@ -5,8 +5,6 @@ import gurobipy as gb
 model = gb.Model("Sunnyshore Bay Financial Planning")
 
 # Monthly revenues and expenses
-revenues = [180000, 260000, 420000, 580000]
-expenses = [300000, 400000, 350000, 200000]
 interest_rates = [0.0175, 0.0225, 0.0275]
 initial_cash = 140000
 
@@ -35,10 +33,10 @@ model.setObjective(total_repayment, GRB.MINIMIZE)
 ##################################################### CONSTRAINTS #####################################################################
 
 # Add the cash balance constraints
-model.addConstr(cash_balance[0] == initial_cash + revenues[0] - expenses[0] + borrow[0, 0] + borrow[0, 1] + borrow[0, 2], "Cash_Balance_May")
-model.addConstr(cash_balance[1] == cash_balance[0] + revenues[1] - expenses[1] - borrow[0, 0] * (1 + 0.0175) + borrow[1, 0] + borrow[1, 1], "Cash_Balance_June")
-model.addConstr(cash_balance[2] == cash_balance[1] + revenues[2] - expenses[2] - borrow[1, 0] * (1 + 0.0175) - borrow[0, 1] * (1 + 0.0225) + borrow[2, 0], "Cash_Balance_July")
-model.addConstr(cash_balance[3] == cash_balance[2] + revenues[3] - expenses[3] - borrow[2, 0] * (1 + 0.0175) - borrow[1, 1] * (1 + 0.0225) - borrow[0, 2] * (1 + 0.0275), "Cash_Balance_August")
+model.addConstr(cash_balance[0] == initial_cash + 180000 - 300000 + borrow[0, 0] + borrow[0, 1] + borrow[0, 2], "Cash_Balance_May")
+model.addConstr(cash_balance[1] == cash_balance[0] + 260000 - 400000 - borrow[0, 0] * (1 + 0.0175) + borrow[1, 0] + borrow[1, 1], "Cash_Balance_June")
+model.addConstr(cash_balance[2] == cash_balance[1] + 420000 - 350000 - borrow[1, 0] * (1 + 0.0175) - borrow[0, 1] * (1 + 0.0225) + borrow[2, 0], "Cash_Balance_July")
+model.addConstr(cash_balance[3] == cash_balance[2] + 580000 - 200000 - borrow[2, 0] * (1 + 0.0175) - borrow[1, 1] * (1 + 0.0225) - borrow[0, 2] * (1 + 0.0275), "Cash_Balance_August")
 
 # Borrowing limits constraints
 model.addConstr(borrow[0, 0] + borrow[0, 1] + borrow[0, 2] <= 250000, "Borrowing_Limit_May")
@@ -49,6 +47,7 @@ model.addConstr(borrow[2, 0] <= 350000, "Borrowing_Limit_July") # 2-month and 3-
 # Minimum cash balance constraints
 model.addConstr(cash_balance[0] >= 25000, "Min_Cash_May")
 model.addConstr(cash_balance[1] >= 20000, "Min_Cash_June")
+#model.addConstr(cash_balance[1] >= 27500, "Min_Cash_June")
 model.addConstr(cash_balance[2] >= 35000, "Min_Cash_July")
 model.addConstr(cash_balance[3] >= 18000, "Min_Cash_August")
 
