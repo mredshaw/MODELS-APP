@@ -72,6 +72,11 @@ transship_capacities = {1: 1317, 2: 1453}
 for hub in transshipment_hubs:
     model.addConstr(gb.quicksum(z[hub, center] for center in refinement_centers) <= transship_capacities[hub],name=f"Transshipment_Capacity_{hub}")
 
+# Flow balance constraints for each transshipment center to ensure shipments in = shipment out
+for hub in transshipment_hubs:
+    model.addConstr(
+        gb.quicksum(y[p, hub] for p in production_facilities_transship if (p, hub) in y) == gb.quicksum(z[hub, r] for r in refinement_centers if (hub, r) in z),
+        name=f"Flow_Balance_{hub}")
 
 # Convert the demand DataFrame to a dictionary for easier lookup
 demand_dict = demand_refinement_df.set_index('RefinementCenter')['Demand'].to_dict()
@@ -82,7 +87,6 @@ for center in refinement_centers:
     model.addConstr((gb.quicksum(x[facility, center] for facility in production_facilities if (facility, center) in x) + 
                      gb.quicksum(z[hub, center] for hub in transshipment_hubs if (hub, center) in z)) >= demand_dict[center], name=f"Demand_{center}")
     
-
 # Solve the Model
 model.optimize()
 
@@ -95,6 +99,23 @@ print("Total Transportation cost: ", model.objVal)
 for v in model.getVars():
     if v.x > 0:
         print(f"{v.varName}: {v.x}")
+
+
+
+# Calculate the total transshipped amount
+total_transshipped = sum(y[p, t].x for p, t in y)
+
+# Calculate the total transported amount (including both direct and transshipped shipments)
+total_transported = sum(x[p, r].x for p, r in x) + total_transshipped
+
+# Calculate the proportion of canola oil that is transshipped
+proportion_transshipped = total_transshipped / total_transported if total_transported > 0 else 0
+
+# Print the results
+print("Total Transshipped Amount: ", total_transshipped)
+print("Total Transported Amount: ", total_transported)
+print("Proportion of Canola Oil Transshipped: ", proportion_transshipped)
+
     
 
 
