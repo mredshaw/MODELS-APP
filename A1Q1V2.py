@@ -6,6 +6,7 @@ model = gb.Model("Can2Oil Transshipment Problem")
 
 #Loading the data from CSV files
 costs_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Refinement.csv')
+capacity_direct_production_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Direct_Production_Facilities.csv')
 costs_transshipment_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Transshipment.csv')
 costs_transshipment_to_refinement_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Transshipment_to_Refinement.csv')
 capacity_transship_production_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Transship_Production_Facilities.csv')
@@ -13,21 +14,24 @@ demand_refinement_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/M
 
 #Print rows from CSV to check data is loaded correctly
 print(costs_df.head())
+print(capacity_direct_production_df.head())
 print(costs_transshipment_df.head())
 print(costs_transshipment_to_refinement_df.head())
 print(capacity_transship_production_df.head())
 print(demand_refinement_df.head())
 
+
+
 # Decision Variables
 
 # Create decision variables for shipping from production facilities to refinement centers
 # x[p, r] represents the quantity shipped from production facility p to refinement center r
+capacity_dict_direct = capacity_direct_production_df.set_index('ProductionFacility')['Capacity'].to_dict()
 production_facilities = costs_df['ProductionFacility'].unique()
 refinement_centers = costs_df['RefinementCenter'].unique()
 prod_refin_tuples = gb.tuplelist((p, r) for p in production_facilities for r in refinement_centers)
 costs_dict = {(row['ProductionFacility'], row['RefinementCenter']): row['Cost'] for _, row in costs_df.iterrows()}
 x = model.addVars(prod_refin_tuples, obj=costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Production_to_Refinement")
-
 
 # Create decision variables for shipping from production facilities to Transhipment hubs
 # x[p, t] represents the quantity shipped from production facility p to Transhipment hub t
@@ -37,12 +41,13 @@ prod_trans_tuples = gb.tuplelist((p, t) for p in production_facilities_transship
 trans_costs_dict = {(row['ProductionFacility'], row['TransshipmentHub']): row['Cost'] for _, row in costs_transshipment_df.iterrows()}
 y = model.addVars(prod_trans_tuples, obj=trans_costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Production_to_Transshipment")
 
-
 # Create decision variables for shipping from Transhipment hubs to Refinement Centers
 # x[t, r] represents the quantity shipped from transhipment hib t to refinement center r
 transship_refin_tuples = gb.tuplelist((t, r) for t in transshipment_hubs for r in refinement_centers)
 transship_to_refin_costs_dict = {(row['TransshipmentHub'], row['RefinementCenter']): row['Cost']for _, row in costs_transshipment_to_refinement_df.iterrows()}
 z = model.addVars(transship_refin_tuples, obj=transship_to_refin_costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Transshipment_to_Refinement")
+
+
 
 
 # Objective Function
@@ -61,7 +66,7 @@ model.setObjective(total_cost, GRB.MINIMIZE)
 transshipment_penalty = 0.5  # Cost added per unit of transshipped oil
 
 adjusted_total_cost = total_cost + transshipment_penalty * gb.quicksum(y[p, t] for p, t in prod_trans_tuples)
-model.setObjective(adjusted_total_cost, GRB.MINIMIZE)
+#model.setObjective(adjusted_total_cost, GRB.MINIMIZE)
 ########################################################################################################
 
 
@@ -73,11 +78,18 @@ direct_shipment_reward = 0.3  # Cost reduced per unit of directly shipped oil fr
 adjusted_rewards_total_cost = total_cost - direct_shipment_reward * gb.quicksum(x[p, r] for p, r in prod_refin_tuples if p <= 15)
 #model.setObjective(adjusted_rewards_total_cost, GRB.MINIMIZE)
 
-# ... [rest of your code for constraints, optimization, and result printing] ...
+
+
+
 
 # Constraints
 
-# Supply constraints for production facilities. Ensuring that the quantity shipped does not exceed the facility's capacity
+# Supply constraints for direct production facilities
+for facility in production_facilities:
+    if facility in capacity_dict_direct:
+        model.addConstr(gb.quicksum(x[facility, center] for center in refinement_centers if (facility, center) in x) <= capacity_dict_direct[facility], name=f"Direct_Supply_Capacity_{facility}")
+
+# Supply constraints for tranship production facilities. Ensuring that the quantity shipped does not exceed the facility's capacity
 capacity_dict = capacity_transship_production_df.set_index('ProductionFacility')['Capacity'].to_dict()
 for facility in production_facilities_transship:
     model.addConstr(gb.quicksum(y[facility, hub] for hub in transshipment_hubs) <= capacity_dict[facility], name=f"Supply_Capacity_{facility}")
@@ -113,6 +125,7 @@ tranship_ratio = 0.2  # Proportion of total shipments that can be transshipped
 #     gb.quicksum(y[p, t] for p, t in prod_trans_tuples)),
 #    name="Transshipment_Ratio_Constraint")
 #############################################################################################################################################################
+
 
 
 
