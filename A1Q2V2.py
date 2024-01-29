@@ -90,84 +90,103 @@ else:
 
 dual_model = gb.Model("Sunnyshore Bay Financial Planning - Dual")
 
-# Dual variables for each constraint in the primal model
 
+# Dual variables for each constraint in the primal model
 #Variables based on the Borrow Limit Constraints
-d_borrow_limit_may = model.addVar(name="d_borrow_limit_may")
-d_borrow_limit_june = model.addVar(name="d_borrow_limit_june")
-d_borrow_limit_july = model.addVar(name="d_borrow_limit_july")
+d_borrow_limit_may = dual_model.addVar(name="d_borrow_limit_may")
+d_borrow_limit_june = dual_model.addVar(name="d_borrow_limit_june")
+d_borrow_limit_july = dual_model.addVar(name="d_borrow_limit_july")
 
 #Variables based on the Cash Balance Constraints
 
-d_cash_balance_may = model.addVar(name="d_cash_balance_may")
-d_cash_balance_june = model.addVar(name="d_cash_balance_june")
-d_cash_balance_july = model.addVar(name="d_cash_balance_july")
-d_cash_balance_august = model.addVar(name="d_cash_balance_august")
+d_cash_balance_may = dual_model.addVar(name="d_cash_balance_may")
+d_cash_balance_june = dual_model.addVar(name="d_cash_balance_june")
+d_cash_balance_july = dual_model.addVar(name="d_cash_balance_july")
+d_cash_balance_august = dual_model.addVar(name="d_cash_balance_august")
 
 
 #Variables based on the Minimum Cash Balance Constraints
-d_min_cash_may = model.addVar(name="d_min_cash_may")
-d_min_cash_june = model.addVar(name="d_min_cash_june")
-d_min_cash_july = model.addVar(name="d_min_cash_july")
-d_min_cash_august = model.addVar(name="d_min_cash_august")
+d_min_cash_may = dual_model.addVar(name="d_min_cash_may")
+d_min_cash_june = dual_model.addVar(name="d_min_cash_june")
+d_min_cash_july = dual_model.addVar(name="d_min_cash_july")
+d_min_cash_august = dual_model.addVar(name="d_min_cash_august")
 
+#Variable based on July cash requirement constraint
+d_july_cash_req = dual_model.addVar(name="d_july_cash_req")
 
-
-
-
-y_borrow_limit_may = dual_model.addVar(name="y_borrow_limit_may")
-y_borrow_limit_june = dual_model.addVar(name="y_borrow_limit_june")
-y_borrow_limit_july = dual_model.addVar(name="y_borrow_limit_july")
-y_cash_balance_may = dual_model.addVar(name="y_cash_balance_may")
-y_cash_balance_june = dual_model.addVar(name="y_cash_balance_june")
-y_cash_balance_july = dual_model.addVar(name="y_cash_balance_july")
-y_cash_balance_august = dual_model.addVar(name="y_cash_balance_august")
-y_min_cash_may = dual_model.addVar(name="y_min_cash_may")
-y_min_cash_june = dual_model.addVar(name="y_min_cash_june")
-y_min_cash_july = dual_model.addVar(name="y_min_cash_july")
-y_min_cash_august = dual_model.addVar(name="y_min_cash_august")
-y_july_cash_balance = dual_model.addVar(name="y_july_cash_balance")
-
-# Dual Objective Function
-# It maximizes the sum of the constraints multiplied by their respective dual variables
-dual_model.setObjective(
-    (250000 * y_borrow_limit_may) + 
-    (150000 * y_borrow_limit_june) + 
-    (350000 * y_borrow_limit_july) + 
-    (initial_cash + revenues[0] - expenses[0] + y_cash_balance_may) + 
-    (revenues[1] - expenses[1] + y_cash_balance_june) + 
-    (revenues[2] - expenses[2] + y_cash_balance_july) + 
-    (revenues[3] - expenses[3] + y_cash_balance_august) + 
-    (25000 * y_min_cash_may) + 
-    (20000 * y_min_cash_june) + 
-    (35000 * y_min_cash_july) + 
-    (18000 * y_min_cash_august) + 
-    (0.65 * ((initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]) * y_july_cash_balance)), 
-    GRB.MAXIMIZE
-)
 
 # Dual Constraints
-# They correspond to the primal decision variables and their coefficients in the primal constraints
-dual_model.addConstr(y_cash_balance_may - y_borrow_limit_may - y_min_cash_may - y_july_cash_balance <= interest_rates[0], "dual_constr_may1")
-dual_model.addConstr(y_cash_balance_may - y_borrow_limit_may - y_min_cash_may - y_july_cash_balance <= interest_rates[1], "dual_constr_may2")
-dual_model.addConstr(y_cash_balance_may - y_borrow_limit_may - y_min_cash_may - y_july_cash_balance <= interest_rates[2], "dual_constr_may3")
-dual_model.addConstr(y_cash_balance_june - y_borrow_limit_june - y_min_cash_june <= interest_rates[0], "dual_constr_june1")
-dual_model.addConstr(y_cash_balance_june - y_borrow_limit_june - y_min_cash_june <= interest_rates[1], "dual_constr_june2")
-dual_model.addConstr(y_cash_balance_july - y_borrow_limit_july - y_min_cash_july <= interest_rates[0], "dual_constr_july1")
+#Dual Constraints for may1 (1-month loan in May): Affects May and June cash balances. Limited by May borrowing limit.
+dual_model.addConstr(d_cash_balance_may - d_borrow_limit_may <= interest_rates[0], "Dual_Constraint_may1_May")
+dual_model.addConstr(d_cash_balance_june - d_cash_balance_may - d_borrow_limit_may <= interest_rates[0], "Dual_Constraint_may1_June")
+
+#Dual Constraints for may2 (2-month loan in May): Affects May, June, and July cash balances. Limited by May borrowing limit.
+dual_model.addConstr(d_cash_balance_may - d_borrow_limit_may <= interest_rates[1], "Dual_Constraint_may2_May")
+dual_model.addConstr(d_cash_balance_june - d_cash_balance_may - d_borrow_limit_may <= interest_rates[1], "Dual_Constraint_may2_June")
+dual_model.addConstr(d_cash_balance_july - d_cash_balance_june - d_borrow_limit_may <= interest_rates[1], "Dual_Constraint_may2_July")
+
+
+#Dual Constraints for may3 (3-month loan in May): Affects May, June, July, and August cash balances. Limited by May borrowing limit.
+dual_model.addConstr(d_cash_balance_may - d_borrow_limit_may <= interest_rates[2], "Dual_Constraint_may3_May")
+dual_model.addConstr(d_cash_balance_june - d_cash_balance_may - d_borrow_limit_may <= interest_rates[2], "Dual_Constraint_may3_June")
+dual_model.addConstr(d_cash_balance_july - d_cash_balance_june - d_borrow_limit_may <= interest_rates[2], "Dual_Constraint_may3_July")
+dual_model.addConstr(d_cash_balance_august - d_cash_balance_july - d_borrow_limit_may <= interest_rates[2], "Dual_Constraint_may3_August")
+
+#Dual Constraints for june1 (1-month loan in June): Affects June and July cash balances. Limited by June borrowing limit.
+dual_model.addConstr(d_cash_balance_june - d_borrow_limit_june <= interest_rates[0], "Dual_Constraint_june1_June")
+dual_model.addConstr(d_cash_balance_july - d_cash_balance_june - d_borrow_limit_june <= interest_rates[0], "Dual_Constraint_june1_July")
+
+#Dual Constraints for june2 (2-month loan in June): Affects June, July, and August cash balances. Limited by June borrowing limit.
+dual_model.addConstr(d_cash_balance_june - d_borrow_limit_june <= interest_rates[1], "Dual_Constraint_june2_June")
+dual_model.addConstr(d_cash_balance_july - d_cash_balance_june - d_borrow_limit_june <= interest_rates[1], "Dual_Constraint_june2_July")
+dual_model.addConstr(d_cash_balance_august - d_cash_balance_july - d_borrow_limit_june <= interest_rates[1], "Dual_Constraint_june2_August")
+
+#Dual Constraints for july1 (1-month loan in July): Affects July and August cash balances. Limited by July borrowing limit.
+dual_model.addConstr(d_cash_balance_july - d_borrow_limit_july - d_july_cash_req <= interest_rates[0], "Dual_Constraint_july1_July")
+dual_model.addConstr(d_cash_balance_august - d_cash_balance_july - d_borrow_limit_july <= interest_rates[0], "Dual_Constraint_july1_August")
+
+dual_obj = (
+    d_borrow_limit_may * 250000 +
+    d_borrow_limit_june * 150000 +
+    d_borrow_limit_july * 350000 +
+    d_cash_balance_may * (initial_cash + revenues[0] - expenses[0]) +
+    d_cash_balance_june * (revenues[1] - expenses[1]) +
+    d_cash_balance_july * (revenues[2] - expenses[2]) +
+    d_cash_balance_august * (revenues[3] - expenses[3]) +
+    d_min_cash_may * 25000 +
+    d_min_cash_june * 20000 +
+    d_min_cash_july * 35000 +
+    d_min_cash_august * 18000 +
+    d_july_cash_req * (0.65 * (initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]))
+)
+dual_model.setObjective(dual_obj, GRB.MAXIMIZE)
+
+
 
 # Solving the dual model
 dual_model.optimize()
 
-# Printing dual model results
+# Check if the model was solved to optimality
 if dual_model.status == GRB.OPTIMAL:
-    print("Optimal Value of Dual Objective: ", dual_model.objVal)
-    print("Dual Variable Values:")
-    print("y_borrow_limit_may: ", y_borrow_limit_may.x)
-    print("y_borrow_limit_june: ", y_borrow_limit_june.x)
-    print("y_borrow_limit_july: ", y_borrow_limit_july.x)
-    # ... (Print other dual variable values similarly)
+    # Print the optimal value of the dual objective function
+    print(f"Optimal Value of Dual Objective Function: {dual_model.objVal}")
+
+    # Print the values of the dual variables
+    print("\nDual Variable Values:")
+    print(f"d_borrow_limit_may: {d_borrow_limit_may.x}")
+    print(f"d_borrow_limit_june: {d_borrow_limit_june.x}")
+    print(f"d_borrow_limit_july: {d_borrow_limit_july.x}")
+    print(f"d_cash_balance_may: {d_cash_balance_may.x}")
+    print(f"d_cash_balance_june: {d_cash_balance_june.x}")
+    print(f"d_cash_balance_july: {d_cash_balance_july.x}")
+    print(f"d_cash_balance_august: {d_cash_balance_august.x}")
+    print(f"d_min_cash_may: {d_min_cash_may.x}")
+    print(f"d_min_cash_june: {d_min_cash_june.x}")
+    print(f"d_min_cash_july: {d_min_cash_july.x}")
+    print(f"d_min_cash_august: {d_min_cash_august.x}")
+    print(f"d_july_cash_req: {d_july_cash_req.x}")
 else:
-    print("Dual Model not solved to optimality.")
+    print("Model not solved to optimality.")
 
 
 
