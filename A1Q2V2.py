@@ -88,73 +88,62 @@ else:
     
 
 
-# Dual Variables
-d_cash_balance = model.addVars(4, lb=-GRB.INFINITY, name="d_cash_balance")
-d_borrow_limit_may = model.addVar(lb=-GRB.INFINITY, name="d_borrow_limit_may")
-d_borrow_limit_june = model.addVar(lb=-GRB.INFINITY, name="d_borrow_limit_june")
-d_borrow_limit_july = model.addVar(lb=-GRB.INFINITY, name="d_borrow_limit_july")
-d_min_cash = model.addVars(4, lb=-GRB.INFINITY, name="d_min_cash")
-d_july_cash_req = model.addVar(lb=-GRB.INFINITY, name="d_july_cash_req")
-min_cash_balances = [25000, 20000, 35000, 18000]
+dual_model = gb.Model("Sunnyshore Bay Financial Planning - Dual")
 
+# Dual variables for each constraint in the primal model
+y_borrow_limit_may = dual_model.addVar(name="y_borrow_limit_may")
+y_borrow_limit_june = dual_model.addVar(name="y_borrow_limit_june")
+y_borrow_limit_july = dual_model.addVar(name="y_borrow_limit_july")
+y_cash_balance_may = dual_model.addVar(name="y_cash_balance_may")
+y_cash_balance_june = dual_model.addVar(name="y_cash_balance_june")
+y_cash_balance_july = dual_model.addVar(name="y_cash_balance_july")
+y_cash_balance_august = dual_model.addVar(name="y_cash_balance_august")
+y_min_cash_may = dual_model.addVar(name="y_min_cash_may")
+y_min_cash_june = dual_model.addVar(name="y_min_cash_june")
+y_min_cash_july = dual_model.addVar(name="y_min_cash_july")
+y_min_cash_august = dual_model.addVar(name="y_min_cash_august")
+y_july_cash_balance = dual_model.addVar(name="y_july_cash_balance")
 
 # Dual Objective Function
-dual_obj = (
-    d_cash_balance[0] * (initial_cash + revenues[0] - expenses[0]) +
-    d_cash_balance[1] * (revenues[1] - expenses[1]) +
-    d_cash_balance[2] * (revenues[2] - expenses[2]) +
-    d_cash_balance[3] * (revenues[3] - expenses[3]) +
-    d_borrow_limit_may * 250000 +
-    d_borrow_limit_june * 150000 +
-    d_borrow_limit_july * 350000 +
-    sum(d_min_cash[i] * min_cash_balances[i] for i in range(4)) +
-    d_july_cash_req * (0.65 * (initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]))
+# It maximizes the sum of the constraints multiplied by their respective dual variables
+dual_model.setObjective(
+    250000 * y_borrow_limit_may + 
+    150000 * y_borrow_limit_june + 
+    350000 * y_borrow_limit_july + 
+    (initial_cash + revenues[0] - expenses[0] + y_cash_balance_may) + 
+    (revenues[1] - expenses[1] + y_cash_balance_june) + 
+    (revenues[2] - expenses[2] + y_cash_balance_july) + 
+    (revenues[3] - expenses[3] + y_cash_balance_august) + 
+    25000 * y_min_cash_may + 
+    20000 * y_min_cash_june + 
+    35000 * y_min_cash_july + 
+    18000 * y_min_cash_august + 
+    0.65 * (initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]) * y_july_cash_balance, 
+    GRB.MAXIMIZE
 )
-model.setObjective(dual_obj, GRB.MAXIMIZE)
 
+# Dual Constraints
+# They correspond to the primal decision variables and their coefficients in the primal constraints
+dual_model.addConstr(y_cash_balance_may - y_borrow_limit_may - y_min_cash_may - y_july_cash_balance <= interest_rates[0], "dual_constr_may1")
+dual_model.addConstr(y_cash_balance_may - y_borrow_limit_may - y_min_cash_may - y_july_cash_balance <= interest_rates[1], "dual_constr_may2")
+dual_model.addConstr(y_cash_balance_may - y_borrow_limit_may - y_min_cash_may - y_july_cash_balance <= interest_rates[2], "dual_constr_may3")
+dual_model.addConstr(y_cash_balance_june - y_borrow_limit_june - y_min_cash_june <= interest_rates[0], "dual_constr_june1")
+dual_model.addConstr(y_cash_balance_june - y_borrow_limit_june - y_min_cash_june <= interest_rates[1], "dual_constr_june2")
+dual_model.addConstr(y_cash_balance_july - y_borrow_limit_july - y_min_cash_july <= interest_rates[0], "dual_constr_july1")
 
-# Dual Constraints for Borrowing
-for i in range(4):
-    for t in range(3):
-        if i - t >= 0:  # Ensure the borrowing term does not exceed the month
-            # Retrieve the appropriate dual variable for borrowing limit constraints
-            borrow_limit_dual_var = d_borrow_limit_may if i - t == 0 else d_borrow_limit_june if i - t == 1 else d_borrow_limit_july if i - t == 2 else 0
-            
-            constraint_expr = d_cash_balance[i - t] - d_cash_balance[i] - borrow_limit_dual_var
-            if i == 2 and t == 0:
-                constraint_expr -= d_july_cash_req
-            
-            model.addConstr(
-                constraint_expr <= interest_rates[t],
-                f"Dual_Constraint_borrow_{i+1}_{t+1}"
-            )
+# Solving the dual model
+dual_model.optimize()
 
-
-
-
-# Solve the dual model
-model.optimize()
-
-# Check if the model was solved to optimality
-if model.status == GRB.OPTIMAL:
-    # Print the value of the dual objective function
-    print("Optimal Value of Dual Objective: ", model.objVal)
-
-    # Print the shadow prices (dual variable values)
-    print("\nShadow Prices:")
-    print("d_cash_balance May: ", d_cash_balance[0].X)
-    print("d_cash_balance June: ", d_cash_balance[1].X)
-    print("d_cash_balance July: ", d_cash_balance[2].X)
-    print("d_cash_balance August: ", d_cash_balance[3].X)
-    print("d_borrow_limit May: ", d_borrow_limit_may.X)
-    print("d_borrow_limit June: ", d_borrow_limit_june.X)
-    print("d_borrow_limit July: ", d_borrow_limit_july.X)
-    for i in range(4):
-        print(f"d_min_cash Month {i+1}: ", d_min_cash[i].X)
-    print("d_july_cash_req: ", d_july_cash_req.X)
-
+# Printing dual model results
+if dual_model.status == GRB.OPTIMAL:
+    print("Optimal Value of Dual Objective: ", dual_model.objVal)
+    print("Dual Variable Values:")
+    print("y_borrow_limit_may: ", y_borrow_limit_may.x)
+    print("y_borrow_limit_june: ", y_borrow_limit_june.x)
+    print("y_borrow_limit_july: ", y_borrow_limit_july.x)
+    # ... (Print other dual variable values similarly)
 else:
-    print("Model not solved to optimality")
+    print("Dual Model not solved to optimality.")
 
 
 
