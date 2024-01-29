@@ -12,12 +12,12 @@ initial_cash = 140000
 ##################################################### DECISION VARIABLES #####################################################################
 
 # Amount borrowed in each month under different terms (1m, 2m, 3m)
-may1 = model.addVar(vtype=GRB.CONTINUOUS, name="may1")  # 1-month loan in May
-may2 = model.addVar(vtype=GRB.CONTINUOUS, name="may2")  # 2-month loan in May
-may3 = model.addVar(vtype=GRB.CONTINUOUS, name="may3")  # 3-month loan in May
-june1 = model.addVar(vtype=GRB.CONTINUOUS, name="june1")  # 1-month loan in June
-june2 = model.addVar(vtype=GRB.CONTINUOUS, name="june2")  # 2-month loan in June
-july1 = model.addVar(vtype=GRB.CONTINUOUS, name="july1")  # 1-month loan in July
+may1 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="may1")  # 1-month loan in May
+may2 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="may2")  # 2-month loan in May
+may3 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="may3")  # 3-month loan in May
+june1 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="june1")  # 1-month loan in June
+june2 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="june2")  # 2-month loan in June
+july1 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="july1")  # 1-month loan in July
 
 # Cash balance at the end of each month
 cash_balance = model.addVars(4, lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance")
@@ -91,9 +91,26 @@ else:
 dual_model = gb.Model("Sunnyshore Bay Financial Planning - Dual")
 
 # Dual variables for each constraint in the primal model
+
+#Variables based on the Borrow Limit Constraints
 d_borrow_limit_may = model.addVar(name="d_borrow_limit_may")
 d_borrow_limit_june = model.addVar(name="d_borrow_limit_june")
 d_borrow_limit_july = model.addVar(name="d_borrow_limit_july")
+
+#Variables based on the Cash Balance Constraints
+
+d_cash_balance_may = model.addVar(name="d_cash_balance_may")
+d_cash_balance_june = model.addVar(name="d_cash_balance_june")
+d_cash_balance_july = model.addVar(name="d_cash_balance_july")
+d_cash_balance_august = model.addVar(name="d_cash_balance_august")
+
+
+#Variables based on the Minimum Cash Balance Constraints
+d_min_cash_may = model.addVar(name="d_min_cash_may")
+d_min_cash_june = model.addVar(name="d_min_cash_june")
+d_min_cash_july = model.addVar(name="d_min_cash_july")
+d_min_cash_august = model.addVar(name="d_min_cash_august")
+
 
 
 
