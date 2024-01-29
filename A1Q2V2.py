@@ -65,6 +65,23 @@ if model.status == GRB.OPTIMAL:
 
     # Optimal objective value
     print(f"Optimal Total Repayment: {model.objVal}")
+    
+    # Shadow prices
+    print("Shadow Prices:")
+    print(f"Borrowing_Limit_May: {model.getConstrByName('Borrowing_Limit_May').Pi}")
+    print(f"Borrowing_Limit_June: {model.getConstrByName('Borrowing_Limit_June').Pi}")
+    print(f"Borrowing_Limit_July: {model.getConstrByName('Borrowing_Limit_July').Pi}")
+    print(f"Cash_Balance_May: {model.getConstrByName('Cash_Balance_May').Pi}")
+    print(f"Cash_Balance_June: {model.getConstrByName('Cash_Balance_June').Pi}")
+    print(f"Cash_Balance_July: {model.getConstrByName('Cash_Balance_July').Pi}")
+    print(f"Cash_Balance_August: {model.getConstrByName('Cash_Balance_August').Pi}")
+    print(f"Min_Cash_May: {model.getConstrByName('Min_Cash_May').Pi}")
+    print(f"Min_Cash_June: {model.getConstrByName('Min_Cash_June').Pi}")
+    print(f"Min_Cash_July: {model.getConstrByName('Min_Cash_July').Pi}")
+    print(f"Min_Cash_August: {model.getConstrByName('Min_Cash_August').Pi}")
+    print(f"July_Cash_Balance_Constraint: {model.getConstrByName('July_Cash_Balance_Constraint').Pi}")
+else:
+    print("Model not solved to optimality.")
 
 
 ##################################################### DUAL MODEL #####################################################################
