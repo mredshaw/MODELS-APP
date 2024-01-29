@@ -35,9 +35,9 @@ model.addConstr(july1 <= 350000, "Borrowing_Limit_July") # 2-month and 3-month t
 
 # Cash balance constraints
 model.addConstr(cash_balance[0] == initial_cash + revenues[0] - expenses[0] + may1 + may2 + may3, "Cash_Balance_May")
-model.addConstr(cash_balance[1] == cash_balance[0] + revenues[1] - expenses[1] - (may1 * (1 + 0.0175)) + june1 + june2, "Cash_Balance_June")
-model.addConstr(cash_balance[2] == cash_balance[1] + revenues[2] - expenses[2] - (june1 * (1 + 0.0175)) - (may2 * (1 + 0.0225)) + july1, "Cash_Balance_July")
-model.addConstr(cash_balance[3] == cash_balance[2] + revenues[3] - expenses[3] - (july1 * (1 + 0.0175)) - (june2 * (1 + 0.0225)) -  (may3* (1 + 0.0275)), "Cash_Balance_August")
+model.addConstr(cash_balance[1] == cash_balance[0] + revenues[1] - expenses[1] - (may1 * (1 + interest_rates[0])) + june1 + june2, "Cash_Balance_June")
+model.addConstr(cash_balance[2] == cash_balance[1] + revenues[2] - expenses[2] - (june1 * (1 + interest_rates[0])) - (may2 * (1 + interest_rates[1])) + july1, "Cash_Balance_July")
+model.addConstr(cash_balance[3] == cash_balance[2] + revenues[3] - expenses[3] - (july1 * (1 + interest_rates[0])) - (june2 * (1 + interest_rates[1])) -  (may3* (1 + interest_rates[2])), "Cash_Balance_August")
 
 # Minimum cash balance constraints
 model.addConstr(cash_balance[0] >= 25000, "Min_Cash_May")
@@ -91,6 +91,13 @@ else:
 dual_model = gb.Model("Sunnyshore Bay Financial Planning - Dual")
 
 # Dual variables for each constraint in the primal model
+d_borrow_limit_may = model.addVar(name="d_borrow_limit_may")
+d_borrow_limit_june = model.addVar(name="d_borrow_limit_june")
+d_borrow_limit_july = model.addVar(name="d_borrow_limit_july")
+
+
+
+
 y_borrow_limit_may = dual_model.addVar(name="y_borrow_limit_may")
 y_borrow_limit_june = dual_model.addVar(name="y_borrow_limit_june")
 y_borrow_limit_july = dual_model.addVar(name="y_borrow_limit_july")
