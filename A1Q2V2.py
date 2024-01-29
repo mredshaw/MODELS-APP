@@ -162,12 +162,18 @@ dual_obj = (
 dual_model.setObjective(dual_obj, GRB.MAXIMIZE)
 
 
-
+dual_model.setParam('InfUnbdInfo', 1)
 # Solving the dual model
 dual_model.optimize()
 
 # Check if the model was solved to optimality
-if dual_model.status == GRB.OPTIMAL:
+if dual_model.status == GRB.INF_OR_UNBD:
+    # Check for infeasibility or unboundedness
+    dual_model.computeIIS()  # Compute Irreducible Inconsistent Subsystem
+    dual_model.write("dual_model.ilp")  # Write the IIS to a file
+    print("IIS written to file 'dual_model.ilp'")
+    print("The model is either infeasible or unbounded.")
+elif dual_model.status == GRB.OPTIMAL:
     # Print the optimal value of the dual objective function
     print(f"Optimal Value of Dual Objective Function: {dual_model.objVal}")
 
