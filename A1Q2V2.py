@@ -93,26 +93,26 @@ dual_model = gb.Model("Sunnyshore Bay Financial Planning - Dual")
 
 # Dual variables for each constraint in the primal model
 #Variables based on the Borrow Limit Constraints
-d_borrow_limit_may = dual_model.addVar(name="d_borrow_limit_may")
-d_borrow_limit_june = dual_model.addVar(name="d_borrow_limit_june")
-d_borrow_limit_july = dual_model.addVar(name="d_borrow_limit_july")
+d_borrow_limit_may = dual_model.addVar(lb=0, name="d_borrow_limit_may")
+d_borrow_limit_june = dual_model.addVar(lb=0, name="d_borrow_limit_june")
+d_borrow_limit_july = dual_model.addVar(lb=0, name="d_borrow_limit_july")
 
 #Variables based on the Cash Balance Constraints
 
-d_cash_balance_may = dual_model.addVar(name="d_cash_balance_may")
-d_cash_balance_june = dual_model.addVar(name="d_cash_balance_june")
-d_cash_balance_july = dual_model.addVar(name="d_cash_balance_july")
-d_cash_balance_august = dual_model.addVar(name="d_cash_balance_august")
+d_cash_balance_may = dual_model.addVar(lb=-GRB.INFINITY, ub=GRB.INFINITY,name="d_cash_balance_may")
+d_cash_balance_june = dual_model.addVar(lb=-GRB.INFINITY, ub=GRB.INFINITY,name="d_cash_balance_june")
+d_cash_balance_july = dual_model.addVar(lb=-GRB.INFINITY, ub=GRB.INFINITY,name="d_cash_balance_july")
+d_cash_balance_august = dual_model.addVar(lb=-GRB.INFINITY, ub=GRB.INFINITY,name="d_cash_balance_august")
 
 
 #Variables based on the Minimum Cash Balance Constraints
-d_min_cash_may = dual_model.addVar(name="d_min_cash_may")
-d_min_cash_june = dual_model.addVar(name="d_min_cash_june")
-d_min_cash_july = dual_model.addVar(name="d_min_cash_july")
-d_min_cash_august = dual_model.addVar(name="d_min_cash_august")
+d_min_cash_may = dual_model.addVar(ub=0, name="d_min_cash_may")
+d_min_cash_june = dual_model.addVar(ub=0, name="d_min_cash_june")
+d_min_cash_july = dual_model.addVar(ub=0, name="d_min_cash_july")
+d_min_cash_august = dual_model.addVar(ub=0, name="d_min_cash_august")
 
 #Variable based on July cash requirement constraint
-d_july_cash_req = dual_model.addVar(name="d_july_cash_req")
+d_july_cash_req = dual_model.addVar(ub=0, name="d_july_cash_req")
 
 
 # Dual Constraints
