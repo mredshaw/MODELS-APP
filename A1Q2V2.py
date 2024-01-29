@@ -107,18 +107,18 @@ y_july_cash_balance = dual_model.addVar(name="y_july_cash_balance")
 # Dual Objective Function
 # It maximizes the sum of the constraints multiplied by their respective dual variables
 dual_model.setObjective(
-    250000 * y_borrow_limit_may + 
-    150000 * y_borrow_limit_june + 
-    350000 * y_borrow_limit_july + 
+    (250000 * y_borrow_limit_may) + 
+    (150000 * y_borrow_limit_june) + 
+    (350000 * y_borrow_limit_july) + 
     (initial_cash + revenues[0] - expenses[0] + y_cash_balance_may) + 
     (revenues[1] - expenses[1] + y_cash_balance_june) + 
     (revenues[2] - expenses[2] + y_cash_balance_july) + 
     (revenues[3] - expenses[3] + y_cash_balance_august) + 
-    25000 * y_min_cash_may + 
-    20000 * y_min_cash_june + 
-    35000 * y_min_cash_july + 
-    18000 * y_min_cash_august + 
-    0.65 * (initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]) * y_july_cash_balance, 
+    (25000 * y_min_cash_may) + 
+    (20000 * y_min_cash_june) + 
+    (35000 * y_min_cash_july) + 
+    (18000 * y_min_cash_august) + 
+    (0.65 * ((initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]) * y_july_cash_balance)), 
     GRB.MAXIMIZE
 )
 
