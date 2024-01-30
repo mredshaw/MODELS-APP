@@ -57,6 +57,7 @@ model.addConstr(cash_balance_august == cash_balance_july + revenues[3] - expense
 # Minimum cash balance constraints
 model.addConstr(cash_balance_may >= 25000, "Min_Cash_May")
 model.addConstr(cash_balance_june >= 20000, "Min_Cash_June")
+#model.addConstr(cash_balance_june >= 27500, "Min_Cash_June")
 model.addConstr(cash_balance_july >= 35000, "Min_Cash_July")
 model.addConstr(cash_balance_august >= 18000, "Min_Cash_August")
 
