@@ -106,6 +106,9 @@ initial_cash = 140000
 
 ############################################################ VARIABLES #####################################################################
 
+
+
+#Setting the lower bounds or upper bounds based on the nature of the corresponding primal constraint 
 Borrowing_Limit_May = dual_model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Borrowing_Limit_May")
 Borrowing_Limit_June = dual_model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Borrowing_Limit_June")
 Borrowing_Limit_July = dual_model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Borrowing_Limit_July")
@@ -125,6 +128,8 @@ July_Cash_Balance_Shadow = dual_model.addVar(vtype=GRB.CONTINUOUS, name="July_Ca
 
 ##################################################### OBJECTIVE FUNCTION #####################################################################
 
+
+#Setting the dual objective function based on the primal constraints, using the constraint value as the coefficient of the corresponding dual variable
 
 dual_model.setObjective(
     # Borrowing limits
@@ -153,6 +158,8 @@ dual_model.setObjective(
 
 ##################################################### CONSTRAINTS #####################################################################
 
+
+# Setting the dual constraints based on the primal variables and the primal constraints
 
 # Dual Constraints for Monthly Cash Flows
 dual_model.addConstr(Cash_Balance_May + Borrowing_Limit_May <= 1 + interest_rates[0], "CF_May1")

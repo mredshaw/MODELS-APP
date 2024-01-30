@@ -5,24 +5,13 @@ import pandas as pd
 model = gb.Model("Can2Oil Transshipment Problem")
 
 #Loading the data from CSV files
-costs_prod_to_refine_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Refinement.csv')
-costs_prod_to_transship_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Production_to_Transshipment.csv')
-costs_transshipment_to_refinement_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Cost_Transshipment_to_Refinement.csv')
-capacity_direct_production_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Direct_Production_Facilities.csv')
-capacity_transship_production_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Transship_Production_Facilities.csv')
-capacity_transship_distribution_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Capacity_for_Transship_Distribution_Centers.csv')
-demand_refinement_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 1/Refinement_Demand.csv')
-
-#Print rows from CSV to check data is loaded correctly
-print(costs_prod_to_refine_df.head())
-print(costs_prod_to_transship_df.head())
-print(costs_transshipment_to_refinement_df.head())
-print(capacity_direct_production_df.head())
-print(capacity_transship_production_df.head())
-print(capacity_transship_distribution_df.head())
-print(demand_refinement_df.head())
-
-
+costs_prod_to_refine_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Cost_Production_to_Refinement.csv')
+costs_prod_to_transship_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Cost_Production_to_Transshipment.csv')
+costs_transshipment_to_refinement_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Cost_Transshipment_to_Refinement.csv')
+capacity_direct_production_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Capacity_for_Direct_Production_Facilities.csv')
+capacity_transship_production_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Capacity_for_Transship_Production_Facilities.csv')
+capacity_transship_distribution_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Capacity_for_Transship_Distribution_Centers.csv')
+demand_refinement_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Refinement_Demand.csv')
 
 ######################################################### DECISION VARIABLES ##############################################################################
 
