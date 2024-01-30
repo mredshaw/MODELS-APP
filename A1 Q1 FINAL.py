@@ -13,9 +13,13 @@ capacity_transship_production_df = pd.read_csv('https://raw.githubusercontent.co
 capacity_transship_distribution_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Capacity_for_Transship_Distribution_Centers.csv')
 demand_refinement_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Refinement_Demand.csv')
 
+
+
 ######################################################### DECISION VARIABLES ##############################################################################
 
-# Create decision variables for shipping from production facilities to refinement centers
+
+
+# Create decision variables for shipping from production facilities p to refinement centers r
 # x[p, r] represents the quantity shipped from production facility p to refinement center r
 capacity_dict_direct = capacity_direct_production_df.set_index('ProductionFacility')['Capacity'].to_dict()
 production_facilities = costs_prod_to_refine_df['ProductionFacility'].unique()
@@ -24,7 +28,8 @@ prod_refin_tuples = gb.tuplelist((p, r) for p in production_facilities for r in 
 costs_dict = {(row['ProductionFacility'], row['RefinementCenter']): row['Cost'] for _, row in costs_prod_to_refine_df.iterrows()}
 x = model.addVars(prod_refin_tuples, obj=costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Production_to_Refinement")
 
-# Create decision variables for shipping from production facilities to Transhipment hubs
+
+# Create decision variables for shipping from production facilities p to Transhipment hubs t
 # x[p, t] represents the quantity shipped from production facility p to Transhipment hub t
 production_facilities_transship = costs_prod_to_transship_df['ProductionFacility'].unique()
 transshipment_hubs = costs_prod_to_transship_df['TransshipmentHub'].unique()
@@ -32,7 +37,9 @@ prod_trans_tuples = gb.tuplelist((p, t) for p in production_facilities_transship
 trans_costs_dict = {(row['ProductionFacility'], row['TransshipmentHub']): row['Cost'] for _, row in costs_prod_to_transship_df.iterrows()}
 y = model.addVars(prod_trans_tuples, obj=trans_costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Production_to_Transshipment")
 
-# Create decision variables for shipping from Transhipment hubs to Refinement Centers
+
+
+# Create decision variables for shipping from Transhipment hubs t to Refinement Centers r
 # x[t, r] represents the quantity shipped from transhipment hib t to refinement center r
 capacity_dict_transship_distribution = capacity_transship_distribution_df.set_index('TransshipmentHub')['Capacity'].to_dict()
 transship_refin_tuples = gb.tuplelist((t, r) for t in transshipment_hubs for r in refinement_centers)
