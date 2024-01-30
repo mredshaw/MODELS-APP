@@ -1,7 +1,6 @@
 from gurobipy import GRB
 import gurobipy as gb
 
-# Create the optimization model
 model = gb.Model("Sunnyshore Bay Financial Planning")
 
 revenues = [180000, 260000, 420000, 580000]
@@ -9,9 +8,8 @@ expenses = [300000, 400000, 350000, 200000]
 interest_rates = [0.0175, 0.0225, 0.0275]
 initial_cash = 140000
 
-##################################################### DECISION VARIABLES #####################################################################
+############################################################     VARIABLES        #####################################################################
 
-# Amount borrowed in each month under different terms (1m, 2m, 3m)
 may1 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="may1")  # 1-month loan in May
 may2 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="may2")  # 2-month loan in May
 may3 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="may3")  # 3-month loan in May
@@ -19,17 +17,30 @@ june1 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="june1")  # 1-month loan i
 june2 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="june2")  # 2-month loan in June
 july1 = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="july1")  # 1-month loan in July
 
-# Cash balance at the end of each month
+
 cash_balance_may = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance_May")
 cash_balance_june = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance_June")
 cash_balance_july = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance_July")
 cash_balance_august = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Cash_Balance_August")
 
+
+
 ##################################################### OBJECTIVE FUNCTION #####################################################################
 
-model.setObjective(((may1 * (1 + interest_rates[0])) + (may2 * (1 + interest_rates[1])) + (may3 * (1 + interest_rates[2])) + (june1 * (1 + interest_rates[0])) + (june2 * (1 + interest_rates[1])) + (july1 * (1 + interest_rates[0]))), GRB.MINIMIZE)
+
+model.setObjective(
+    may1 * (1 + interest_rates[0]) + 
+    may2 * (1 + interest_rates[1]) + 
+    may3 * (1 + interest_rates[2]) + 
+    june1 * (1 + interest_rates[0]) + 
+    june2 * (1 + interest_rates[1]) + 
+    july1 * (1 + interest_rates[0]), GRB.MINIMIZE
+)
+
+
 
 ##################################################### CONSTRAINTS #####################################################################
+
 
 # Borrowing limits constraints
 model.addConstr(may1 + may2 + may3 <= 250000, "Borrowing_Limit_May")
@@ -53,10 +64,12 @@ model.addConstr(cash_balance_august >= 18000, "Min_Cash_August")
 model.addConstr(cash_balance_july >= 0.65 * (cash_balance_may + cash_balance_june), "July_Cash_Balance_Constraint")
 
 
+##################################################### OPTIMIZE & PRINT RESULTS #####################################################################
+
 
 model.optimize()
 
-print(model.objVal)
+print("PRIMAL OPTIMAL OBJECTIVE VALUE",model.objVal)
 print(model.printAttr('X'))
 
 
@@ -77,9 +90,12 @@ print(f"July_Cash_Balance_Constraint: {model.getConstrByName('July_Cash_Balance_
 
 
 
+
+
+
 ##################################################### DUAL MODEL #####################################################################
-    
-# Create the optimization model
+  
+
 dual_model = gb.Model("Sunnyshore Bay Financial Planning Dual")
 
 revenues = [180000, 260000, 420000, 580000]
@@ -87,7 +103,7 @@ expenses = [300000, 400000, 350000, 200000]
 interest_rates = [0.0175, 0.0225, 0.0275]
 initial_cash = 140000
 
-# Create Variables
+############################################################ VARIABLES #####################################################################
 
 Borrowing_Limit_May = dual_model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Borrowing_Limit_May")
 Borrowing_Limit_June = dual_model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="Borrowing_Limit_June")
@@ -104,6 +120,9 @@ Min_Cash_July = dual_model.addVar(ub=0, vtype=GRB.CONTINUOUS, name="Min_Cash_Jul
 Min_Cash_August = dual_model.addVar(ub=0, vtype=GRB.CONTINUOUS, name="Min_Cash_August")
 
 July_Cash_Balance_Shadow = dual_model.addVar(vtype=GRB.CONTINUOUS, name="July_Cash_Balance_Shadow")
+
+
+##################################################### OBJECTIVE FUNCTION #####################################################################
 
 
 dual_model.setObjective(
@@ -130,6 +149,10 @@ dual_model.setObjective(
     GRB.MAXIMIZE
 )
 
+
+##################################################### CONSTRAINTS #####################################################################
+
+
 # Dual Constraints for Monthly Cash Flows
 dual_model.addConstr(Cash_Balance_May + Borrowing_Limit_May <= 1 + interest_rates[0], "CF_May1")
 dual_model.addConstr(Cash_Balance_June + Borrowing_Limit_May <= interest_rates[1], "CF_May2")
@@ -150,13 +173,21 @@ dual_model.addConstr(Cash_Balance_August - Cash_Balance_June - Borrowing_Limit_J
 
 dual_model.addConstr(Cash_Balance_August - Cash_Balance_May - Borrowing_Limit_May * (1 + interest_rates[2]) <= 0, "Repayment_Adjust_May3")
 
+
+# Dual Constraint for July Cash Blanace
+
 dual_model.addConstr(0.65 * (Cash_Balance_May + Cash_Balance_June) - Cash_Balance_July <= July_Cash_Balance_Shadow, "July_Cash_Balance_Dual_Constraint")
 
 
 
 
+##################################################### OPTIMIZE & PRINT RESULTS #####################################################################
+
+
+
 dual_model.optimize()
-print(dual_model.objVal)
+
+print("DUAL OPTIMAL OBJECTIVE VALUE",dual_model.objVal)
 print(dual_model.printAttr('X'))
 
 
