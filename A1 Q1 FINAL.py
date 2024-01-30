@@ -40,36 +40,56 @@ transship_to_refin_costs_dict = {(row['TransshipmentHub'], row['RefinementCenter
 z = model.addVars(transship_refin_tuples, obj=transship_to_refin_costs_dict, lb=0, vtype=GRB.CONTINUOUS, name="Ship_Transshipment_to_Refinement")
 
 
-# Objective Function
 
-# The objective is to minimize the total transportation cost
+
+##################################################### OBJECTIVE FUNCTION #####################################################################
+
+
+
 # This is the sum of the transportation costs for all shipping routes
+
 total_cost = gb.quicksum(x[p, r] * costs_dict[p, r] for p, r in prod_refin_tuples if (p, r) in x) + \
              gb.quicksum(y[p, t] * trans_costs_dict[p, t] for p, t in prod_trans_tuples if (p, t) in y) + \
              gb.quicksum(z[t, r] * transship_to_refin_costs_dict[t, r] for t, r in transship_refin_tuples if (t, r) in z)
+
+# The objective is to minimize the total transportation cost
 model.setObjective(total_cost, GRB.MINIMIZE)
 
 
-#Adding a cost penalty for transhipments. Comment out objective function when not using.
-########################################################################################################
+
+
+
+#############################   Adding a cost penalty for transhipments. Comment out objective function when not using. ##############################
+'''
 # Define the penalty for transshipments and the reward for direct shipments
 transshipment_penalty = 1.5  # Cost added per unit of transshipped oil
 
 adjusted_total_cost = total_cost + transshipment_penalty * gb.quicksum(y[p, t] for p, t in prod_trans_tuples)
-#model.setObjective(adjusted_total_cost, GRB.MINIMIZE)
-########################################################################################################
+model.setObjective(adjusted_total_cost, GRB.MINIMIZE)
+'''
 
+############################ Adding a reward for facilities in North America. Comment out objective function when not using. ######################################
+'''
+direct_shipment_reward = 0.5  # Define the reward for shipments close to home
 
-#Adding a reward for facilities in North America. Comment out objective function when not using.
-########################################################################################################
-# Define the reward for certain direct shipments
-direct_shipment_reward = 0.5  # Cost reduced per unit of directly shipped oil from facilities 1-15
-# Apply rewards to x variables for facilities 1-15
+# Apply rewards to x variables for facilities 1-15 (US, Canada & Mexico)
 adjusted_rewards_total_cost = total_cost - direct_shipment_reward * gb.quicksum(x[p, r] for p, r in prod_refin_tuples if p <= 15)
-#model.setObjective(adjusted_rewards_total_cost, GRB.MINIMIZE)
+
+model.setObjective(adjusted_rewards_total_cost, GRB.MINIMIZE)
+'''
+
+################ Adding a ratio constraint for transhipments. Comment out when not using. ##################################################################
+
+''''
+tranship_ratio = 0.2  # Proportion of total shipments that can be transshipped
+model.addConstr(gb.quicksum(y[p, t] for p, t in prod_trans_tuples) <= tranship_ratio * 
+                (gb.quicksum(x[p, r] for p, r in prod_refin_tuples) + gb.quicksum(y[p, t] for p, t in prod_trans_tuples)),name="Transshipment_Ratio_Constraint")
+'''
+
 
 
 ######################################################### CONSTRAINTS ##############################################################################
+
 
 # Supply constraints for direct production facilities
 for facility in production_facilities:
@@ -101,16 +121,8 @@ for center in refinement_centers:
 
 
 
-#Adding a ratio constraint for transhipments. Comment out when not using.    
-#############################################################################################################################################################
-tranship_ratio = 0.2  # Proportion of total shipments that can be transshipped
-#model.addConstr(gb.quicksum(y[p, t] for p, t in prod_trans_tuples) <= tranship_ratio * 
-#                (gb.quicksum(x[p, r] for p, r in prod_refin_tuples) + gb.quicksum(y[p, t] for p, t in prod_trans_tuples)),name="Transshipment_Ratio_Constraint")
-#############################################################################################################################################################
-
 
 ######################################################### MODEL OPTIMIZATION & RESULTS ##############################################################################
-
 
 model.optimize()
 
