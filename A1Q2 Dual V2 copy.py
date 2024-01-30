@@ -72,4 +72,3 @@ dual_model.addConstr(Cash_Balance_August - Cash_Balance_July - Borrowing_Limit_J
 
 
 dual_model.optimize()
-print(dual_model.printAttr('X'))
