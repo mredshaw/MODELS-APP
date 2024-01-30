@@ -25,12 +25,8 @@ Min_Cash_June = dual_model.addVar(ub=0, vtype=GRB.CONTINUOUS, name="Min_Cash_Jun
 Min_Cash_July = dual_model.addVar(ub=0, vtype=GRB.CONTINUOUS, name="Min_Cash_July")
 Min_Cash_August = dual_model.addVar(ub=0, vtype=GRB.CONTINUOUS, name="Min_Cash_August")
 
-Penalty_Max_Cash_May = dual_model.addVar(vtype=GRB.CONTINUOUS, name="Penalty_Max_Cash_May")
-Penalty_Max_Cash_June = dual_model.addVar(vtype=GRB.CONTINUOUS, name="Penalty_Max_Cash_June")
-Penalty_Max_Cash_July = dual_model.addVar(vtype=GRB.CONTINUOUS, name="Penalty_Max_Cash_July")
-
-
 July_Cash_Balance_Constraint = dual_model.addVar(ub=0, vtype=GRB.CONTINUOUS, name="July_Cash_Balance_Constraint")
+
 
 dual_model.setObjective((25000 * Borrowing_Limit_May) +
                    (150000 * Borrowing_Limit_June) +
@@ -43,37 +39,36 @@ dual_model.setObjective((25000 * Borrowing_Limit_May) +
                    ((Cash_Balance_May + revenues[1] - expenses[1]) * Cash_Balance_June) +
                    ((Cash_Balance_June + revenues[2] - expenses[2]) * Cash_Balance_July) +
                    ((Cash_Balance_July + revenues[3] - expenses[3]) * Cash_Balance_August) +
-                   (- Penalty_Max_Cash_May * (initial_cash + revenues[0] - expenses[0] + 250000)) +
-                   (- Penalty_Max_Cash_June * (Cash_Balance_May + revenues[1] - expenses[1] + 150000)) +
-                   (- Penalty_Max_Cash_July * (Cash_Balance_June + revenues[2] - expenses[2] + 350000)) +
                    (0.65 * (initial_cash + revenues[0] - expenses[0] + revenues[1] - expenses[1]) * July_Cash_Balance_Constraint), gb.GRB.MAXIMIZE)
 
 
 
 # Dual Constraints for May Loans
-dual_model.addConstr(-Cash_Balance_May + Borrowing_Limit_May <= interest_rates[0], "Dual_Constraint_may1_May")
-dual_model.addConstr(-Cash_Balance_June + Borrowing_Limit_May <= 0, "Dual_Constraint_may1_June")
+# Dual Constraints for May Loans
+dual_model.addConstr(Cash_Balance_May - Borrowing_Limit_May <= interest_rates[0], "Dual_Constraint_may1_May")
+dual_model.addConstr(Cash_Balance_June - Cash_Balance_May - Borrowing_Limit_May <= 0, "Dual_Constraint_may1_June")
 
-dual_model.addConstr(-Cash_Balance_May + Borrowing_Limit_May <= interest_rates[1], "Dual_Constraint_may2_May")
-dual_model.addConstr(-Cash_Balance_June + Borrowing_Limit_May <= 0, "Dual_Constraint_may2_June")
-dual_model.addConstr(-Cash_Balance_July + Borrowing_Limit_May <= 0, "Dual_Constraint_may2_July")
+dual_model.addConstr(Cash_Balance_May - Borrowing_Limit_May <= interest_rates[1], "Dual_Constraint_may2_May")
+dual_model.addConstr(Cash_Balance_June - Cash_Balance_May - Borrowing_Limit_May <= 0, "Dual_Constraint_may2_June")
+dual_model.addConstr(Cash_Balance_July - Cash_Balance_June - Borrowing_Limit_May <= 0, "Dual_Constraint_may2_July")
 
-dual_model.addConstr(-Cash_Balance_May + Borrowing_Limit_May <= interest_rates[2], "Dual_Constraint_may3_May")
-dual_model.addConstr(-Cash_Balance_June + Borrowing_Limit_May <= 0, "Dual_Constraint_may3_June")
-dual_model.addConstr(-Cash_Balance_July + Borrowing_Limit_May <= 0, "Dual_Constraint_may3_July")
-dual_model.addConstr(-Cash_Balance_August + Borrowing_Limit_May <= 0, "Dual_Constraint_may3_August")
+dual_model.addConstr(Cash_Balance_May - Borrowing_Limit_May <= interest_rates[2], "Dual_Constraint_may3_May")
+dual_model.addConstr(Cash_Balance_June - Cash_Balance_May - Borrowing_Limit_May <= 0, "Dual_Constraint_may3_June")
+dual_model.addConstr(Cash_Balance_July - Cash_Balance_June - Borrowing_Limit_May <= 0, "Dual_Constraint_may3_July")
+dual_model.addConstr(Cash_Balance_August - Cash_Balance_July - Borrowing_Limit_May <= 0, "Dual_Constraint_may3_August")
 
 # Dual Constraints for June Loans
-dual_model.addConstr(-Cash_Balance_June + Borrowing_Limit_June <= interest_rates[0], "Dual_Constraint_june1_June")
-dual_model.addConstr(-Cash_Balance_July + Borrowing_Limit_June <= 0, "Dual_Constraint_june1_July")
+dual_model.addConstr(Cash_Balance_June - Borrowing_Limit_June <= interest_rates[0], "Dual_Constraint_june1_June")
+dual_model.addConstr(Cash_Balance_July - Cash_Balance_June - Borrowing_Limit_June <= 0, "Dual_Constraint_june1_July")
 
-dual_model.addConstr(-Cash_Balance_June + Borrowing_Limit_June <= interest_rates[1], "Dual_Constraint_june2_June")
-dual_model.addConstr(-Cash_Balance_July + Borrowing_Limit_June <= 0, "Dual_Constraint_june2_July")
-dual_model.addConstr(-Cash_Balance_August + Borrowing_Limit_June <= 0, "Dual_Constraint_june2_August")
+dual_model.addConstr(Cash_Balance_June - Borrowing_Limit_June <= interest_rates[1], "Dual_Constraint_june2_June")
+dual_model.addConstr(Cash_Balance_July - Cash_Balance_June - Borrowing_Limit_June <= 0, "Dual_Constraint_june2_July")
+dual_model.addConstr(Cash_Balance_August - Cash_Balance_July - Borrowing_Limit_June <= 0, "Dual_Constraint_june2_August")
 
 # Dual Constraints for July Loan
-dual_model.addConstr(-Cash_Balance_July + Borrowing_Limit_July <= interest_rates[0], "Dual_Constraint_july1_July")
-dual_model.addConstr(-Cash_Balance_August + Borrowing_Limit_July <= 0, "Dual_Constraint_july1_August")
+dual_model.addConstr(Cash_Balance_July - Borrowing_Limit_July <= interest_rates[0], "Dual_Constraint_july1_July")
+dual_model.addConstr(Cash_Balance_August - Cash_Balance_July - Borrowing_Limit_July <= 0, "Dual_Constraint_july1_August")
+
 
 
 dual_model.optimize()

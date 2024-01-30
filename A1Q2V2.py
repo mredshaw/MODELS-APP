@@ -45,19 +45,14 @@ model.addConstr(cash_balance_august == cash_balance_july + revenues[3] - expense
 
 # Minimum cash balance constraints
 model.addConstr(cash_balance_may >= 25000, "Min_Cash_May")
-model.addConstr(cash_balance_may <= initial_cash + revenues[0] - expenses[0] + 250000, "Max_Cash_May")
-
 model.addConstr(cash_balance_june >= 20000, "Min_Cash_June")
-model.addConstr(cash_balance_june <= cash_balance_may + revenues[1] - expenses[1] + 150000, "Max_Cash_June")
-#model.addConstr(cash_balance_june >= 27500, "Min_Cash_June")
-
 model.addConstr(cash_balance_july >= 35000, "Min_Cash_July")
-model.addConstr(cash_balance_july <= cash_balance_june + revenues[2] - expenses[2] + 350000, "Max_Cash_July")
-
 model.addConstr(cash_balance_august >= 18000, "Min_Cash_August")
 
 # Constraint on cash balance at end of July
 model.addConstr(cash_balance_july >= 0.65 * (cash_balance_may + cash_balance_june), "July_Cash_Balance_Constraint")
+
+
 
 model.optimize()
 
@@ -126,31 +121,31 @@ d_july_cash_req = dual_model.addVar(ub=0, name="d_july_cash_req")
 # Dual Constraints
 # Dual Constraints for may1 (1-month loan in May): Affects May and June cash balances. Limited by May borrowing limit.
 dual_model.addConstr(d_cash_balance_may - d_borrow_limit_may <= interest_rates[0], "Dual_Constraint_may1_May")
-dual_model.addConstr(-d_cash_balance_june + d_cash_balance_may - d_borrow_limit_may >= 0, "Dual_Constraint_may1_June")
+dual_model.addConstr(-d_cash_balance_june + d_cash_balance_may - d_borrow_limit_may <= 0, "Dual_Constraint_may1_June")
 
 # Dual Constraints for may2 (2-month loan in May): Affects May, June, and July cash balances. Limited by May borrowing limit.
 dual_model.addConstr(d_cash_balance_may - d_borrow_limit_may <= interest_rates[1], "Dual_Constraint_may2_May")
-dual_model.addConstr(-d_cash_balance_june + d_cash_balance_may - d_borrow_limit_may >= 0, "Dual_Constraint_may2_June")
-dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_may >= 0, "Dual_Constraint_may2_July")
+dual_model.addConstr(-d_cash_balance_june + d_cash_balance_may - d_borrow_limit_may <= 0, "Dual_Constraint_may2_June")
+dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_may <= 0, "Dual_Constraint_may2_July")
 
 # Dual Constraints for may3 (3-month loan in May): Affects May, June, July, and August cash balances. Limited by May borrowing limit.
 dual_model.addConstr(d_cash_balance_may - d_borrow_limit_may <= interest_rates[2], "Dual_Constraint_may3_May")
-dual_model.addConstr(-d_cash_balance_june + d_cash_balance_may - d_borrow_limit_may >= 0, "Dual_Constraint_may3_June")
-dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_may >= 0, "Dual_Constraint_may3_July")
-dual_model.addConstr(-d_cash_balance_august + d_cash_balance_july - d_borrow_limit_may >= 0, "Dual_Constraint_may3_August")
+dual_model.addConstr(-d_cash_balance_june + d_cash_balance_may - d_borrow_limit_may <= 0, "Dual_Constraint_may3_June")
+dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_may <= 0, "Dual_Constraint_may3_July")
+dual_model.addConstr(-d_cash_balance_august + d_cash_balance_july - d_borrow_limit_may <= 0, "Dual_Constraint_may3_August")
 
 # Dual Constraints for june1 (1-month loan in June): Affects June and July cash balances. Limited by June borrowing limit.
 dual_model.addConstr(d_cash_balance_june - d_borrow_limit_june <= interest_rates[0], "Dual_Constraint_june1_June")
-dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_june >= 0, "Dual_Constraint_june1_July")
+dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_june <= 0, "Dual_Constraint_june1_July")
 
 # Dual Constraints for june2 (2-month loan in June): Affects June, July, and August cash balances. Limited by June borrowing limit.
 dual_model.addConstr(d_cash_balance_june - d_borrow_limit_june <= interest_rates[1], "Dual_Constraint_june2_June")
-dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_june >= 0, "Dual_Constraint_june2_July")
-dual_model.addConstr(-d_cash_balance_august + d_cash_balance_july - d_borrow_limit_june >= 0, "Dual_Constraint_june2_August")
+dual_model.addConstr(-d_cash_balance_july + d_cash_balance_june - d_borrow_limit_june <= 0, "Dual_Constraint_june2_July")
+dual_model.addConstr(-d_cash_balance_august + d_cash_balance_july - d_borrow_limit_june <= 0, "Dual_Constraint_june2_August")
 
 # Dual Constraints for july1 (1-month loan in July): Affects July and August cash balances. Limited by July borrowing limit.
 dual_model.addConstr(d_cash_balance_july - d_borrow_limit_july - d_july_cash_req <= interest_rates[0], "Dual_Constraint_july1_July")
-dual_model.addConstr(-d_cash_balance_august + d_cash_balance_july - d_borrow_limit_july >= 0, "Dual_Constraint_july1_August")
+dual_model.addConstr(-d_cash_balance_august + d_cash_balance_july - d_borrow_limit_july <= 0, "Dual_Constraint_july1_August")
 
 dual_obj = (
     d_borrow_limit_may * 250000 +
