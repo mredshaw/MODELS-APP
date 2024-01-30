@@ -20,6 +20,8 @@ borrowing_limit_may = dual_model.addVar(name="borrowing_limit_may")
 borrowing_limit_june = dual_model.addVar(name="borrowing_limit_june")
 borrowing_limit_july = dual_model.addVar(name="borrowing_limit_july")
 
+july_cash_balance_shadow = dual_model.addVar(vtype=GRB.CONTINUOUS, name="July_Cash_Balance_Shadow")
+
 dual_obj = (
     25000 * cash_balance_may + 
     20000 * cash_balance_june + 
@@ -40,7 +42,7 @@ dual_model.addConstr(cash_balance_july + borrowing_limit_may <= interest_rates[2
 
 # Constraints for the direct impact of June borrowing on cash balance and borrowing limits
 dual_model.addConstr(cash_balance_june + borrowing_limit_june <= 1 + interest_rates[0], "CF_June1")
-dual_model.addConstr(cash_balance_august + borrowing_limit_june <= interest_rates[1], "CF_June2")
+dual_model.addConstr(cash_balance_july + borrowing_limit_june <= interest_rates[1], "CF_June2")
 
 # Constraint for the direct impact of July borrowing on cash balance and borrowing limit
 dual_model.addConstr(cash_balance_july + borrowing_limit_july <= 1 + interest_rates[0], "CF_July1")
@@ -55,7 +57,7 @@ dual_model.addConstr(cash_balance_july - cash_balance_may - borrowing_limit_may 
 dual_model.addConstr(cash_balance_august - cash_balance_june - borrowing_limit_june * (1 + interest_rates[1]) <= 0, "Repayment_Adjust_June2")
 dual_model.addConstr(cash_balance_august - cash_balance_may - borrowing_limit_may * (1 + interest_rates[2]) <= 0, "Repayment_Adjust_May3")
 
-
+#dual_model.addConstr(0.65 * (cash_balance_may + cash_balance_june) - cash_balance_july <= july_cash_balance_shadow, "July_Cash_Balance_Dual_Constraint")
 
 
 # Omitting specific constraints for clarity and brevity
