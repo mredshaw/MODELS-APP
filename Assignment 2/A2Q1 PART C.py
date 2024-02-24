@@ -9,19 +9,19 @@ model = Model('Maximize Revenue Within Line Constraints')
 
 # Convert dataframe columns to arrays
 intercepts = df['Intercept'].to_numpy()
-sensitivities = df['Sensitivity'].to_numpy()
+sensitivities = abs(df['Sensitivity'].to_numpy())
 capacities = df['Capacity'].to_numpy()
 
 # Add price variables for each product
 prices = model.addVars(len(df), name='price', lb=0)
 
 # Define the objective function (total revenue)
-revenue = sum((intercepts[i] + sensitivities[i] * prices[i]) * prices[i] for i in range(len(df)))
+revenue = sum((intercepts[i] - sensitivities[i] * prices[i]) * prices[i] for i in range(len(df)))
 model.setObjective(revenue, GRB.MAXIMIZE)
 
 # Add capacity constraints
 for i in range(len(df)):
-    demand = intercepts[i] + sensitivities[i] * prices[i]
+    demand = intercepts[i] - sensitivities[i] * prices[i]
     model.addConstr(demand <= capacities[i], name=f'capacity_{i}')
 
 

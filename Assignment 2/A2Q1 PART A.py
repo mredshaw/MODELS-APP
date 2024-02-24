@@ -3,8 +3,13 @@ import numpy as np
 import pandas as pd
 
 # Given parameters from the dataset
-a1, b1 = 35234.54578551236, 45.89644971  # Basic version
-a2, b2 = 37790.24083213697, 8.227794173  # Advanced version
+df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/price_response.csv')  # Change to your file's path
+
+intercepts = df['Intercept'].to_numpy()
+sensitivities = abs(df['Sensitivity'].to_numpy())
+capacities = df['Capacity'].to_numpy()
+
+a1, a2, b1, b2 = intercepts[0], intercepts[1], sensitivities[0], sensitivities[1]
 
 # Create a new model
 m = Model("TechEssentials Pricing")
@@ -19,11 +24,7 @@ m.setObjective(p1 * (a1 - b1 * p1) + p2 * (a2 - b2 * p2), GRB.MAXIMIZE)
 # Add constraints
 m.addConstr(a1 - b1 * p1 >= 0, "DemandNonNegativityBasic")
 m.addConstr(a2 - b2 * p2 >= 0, "DemandNonNegativityAdvanced")
-m.addConstr(p2 >= p1, "PriceOrdering")
-m.addConstr(a1 >=0, "BasicDemandNonNegativity")
-m.addConstr(a2 >=0, "AdvancedDemandNonNegativity")
-m.addConstr(b1 >=0, "BasicSlopeNonNegativity")
-m.addConstr(b2 >=0, "AdvancedSlopeNonNegativity")
+m.addConstr(p2 - p1 >= 0.01, "PriceOrdering")
 
 # Optimize the model
 m.optimize()

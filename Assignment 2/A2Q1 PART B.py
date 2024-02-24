@@ -1,9 +1,15 @@
 from gurobipy import Model, GRB
 import numpy as np
+import pandas as pd
 
 # Define the price response function coefficients for the two products
-a1, b1 = 35234.54578551236, 45.89644971
-a2, b2 = 37790.24083213697, 8.227794173
+df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/price_response.csv')  # Change to your file's path
+
+intercepts = df['Intercept'].to_numpy()
+sensitivities = abs(df['Sensitivity'].to_numpy())
+capacities = df['Capacity'].to_numpy()
+
+a1, a2, b1, b2 = intercepts[0], intercepts[1], sensitivities[0], sensitivities[1]
 
 # Define the initial prices for both products
 initial_prices = np.array([0, 0])
@@ -30,16 +36,14 @@ m.setParam('OutputFlag', 0) # Suppress Gurobi output
 p1 = m.addVar(lb=0, name="p1")
 p2 = m.addVar(lb=0, name="p2")
 
-m.addConstr(p2 >= p1, "price_ordering")
 m.addConstr(a1 - b1 * p1 >= 0, "DemandNonNegativityBasic")
 m.addConstr(a2 - b2 * p2 >= 0, "DemandNonNegativityAdvanced")
-m.addConstr(p2 >= p1, "PriceOrdering")
-m.addConstr(a1 >=0, "BasicDemandNonNegativity")
-m.addConstr(a2 >=0, "AdvancedDemandNonNegativity")
-m.addConstr(b1 >=0, "BasicSlopeNonNegativity")
-m.addConstr(b2 >=0, "AdvancedSlopeNonNegativity")
+m.addConstr(p2 - p1 >= 0.01, "PriceOrdering")
 
 iteration_counter = 0
+
+# List to store revenue at each iteration
+revenues = []
 
 # Start the projected gradient descent algorithm
 while True:
@@ -61,17 +65,23 @@ while True:
     # Extract the projected prices
     projected_prices = np.array([p1.X, p2.X])
     
+    # Calculate and store the revenue at the current prices
+    current_revenue = projected_prices[0] * (a1 - b1 * projected_prices[0]) + projected_prices[1] * (a2 - b2 * projected_prices[1])
+    revenues.append(current_revenue)
+    
     # Check the stopping criterion
     if np.linalg.norm(prices - projected_prices) < stopping_criterion:
         break
     
     # Update the prices
     prices = projected_prices
-    if iteration_counter % 10 == 0:  # Print every 10 iterations
-        print(f'Iteration {iteration_counter}: Prices = {prices}')
+    if iteration_counter % 10 == 0:  # Print every 10 iterations to track progress
+        print(f'Iteration {iteration_counter}: Prices = {prices}, Revenue = {current_revenue}')
 
-# Print the final prices
+# Print the final prices and revenue
 print("\n")
 print(f'The model ran {iteration_counter} iterations.')
 print("Optimal prices found:", prices)
+print("Optimal revenue:", revenues[-1])
+
 
