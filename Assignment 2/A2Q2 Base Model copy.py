@@ -28,13 +28,18 @@ fc_players = [i for i in filtered_players_df.index if filtered_players_df.loc[i,
 model.addConstr(sum(x[i] for i in guard_players) >= 0.3 * sum(x.values()), "GuardPosition")
 model.addConstr(sum(x[i] for i in fc_players) >= 0.4 * sum(x.values()), "ForwardCenterPosition")
 
-# Constraints for specific player groups (using original indices)
-model.addConstr(sum(x[i] for i in range(19, 25) if i in filtered_players_df.index) <= (1 - sum(x[i] for i in range(71, 79) if i in filtered_players_df.index)), "Group_20_24")
-model.addConstr(sum(x[i] for i in range(104, 115) if i in filtered_players_df.index) <= (sum(x[i] for i in range(44, 50) if i in filtered_players_df.index) + sum(x[i] for i in range(64, 70) if i in filtered_players_df.index)), "Group_105_114")
+# If any player from 20-24 (inclusive) is invited, all players from 72-78 (inclusive) cannot be
+model.addConstr(sum(x[i] for i in filtered_players_df.index if 20 <= filtered_players_df.loc[i, 'Number'] <= 24) <= (1 - sum(x[j] for j in filtered_players_df.index if 72 <= filtered_players_df.loc[j, 'Number'] <= 78)), "Group_20_24")
 
-# Constraints for at least one player from each group of 10 (using original indices)
-for i in range(0, max(filtered_players_df.index), 10):
-    model.addConstr(sum(x[j] for j in range(i, min(i+10, max(filtered_players_df.index)+1)) if j in filtered_players_df.index) >= 1, f"Group_{i+1}_{min(i+10, max(filtered_players_df.index)+1)}")
+# If any player from 105-114 (inclusive) is invited, at least one player from 45-49 (inclusive) and 65-69 (inclusive) must be invited
+for i in [idx for idx in filtered_players_df.index if 105 <= filtered_players_df.loc[idx, 'Number'] <= 114]:
+    model.addConstr(x[i] <= sum(x[j] for j in filtered_players_df.index if 45 <= filtered_players_df.loc[j, 'Number'] <= 49) + sum(x[k] for k in filtered_players_df.index if 65 <= filtered_players_df.loc[k, 'Number'] <= 69), f"Group_105_114_requires_{i}")
+
+
+# At least one player must be invited from: 1-10, 11-20, 21-30, ..., 131-140, 141-150
+for i in range(1, 151, 10):
+    model.addConstr(sum(x[j] for j in filtered_players_df.index if i <= filtered_players_df.loc[j, 'Number'] < i + 10) >= 1, f"Group_{i}_{i+9}")
+
     
 # Objective function to maximize total skill ratings
 skills = ['Ball Handling', 'Shooting', 'Rebounding', 'Defense', 'Athletic Ability', 'Toughness', 'Mental Acuity']
