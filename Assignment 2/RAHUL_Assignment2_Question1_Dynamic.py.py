@@ -4,7 +4,7 @@ from gurobipy import Model, GRB
 import numpy as np
 
 # Load the dataset from a CSV file
-df = pd.read_csv(r'C:\Users\rahul\Desktop\MBAN\Models\price_response.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/price_response.csv')
 
 # Filter the DataFrame to get the coefficients for Line 1 Product 1 and Line 1 Product 2
 line_1_product_1_row = df[(df['Product'] == 'Line 1 Product 1')]
