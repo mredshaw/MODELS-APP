@@ -14,7 +14,7 @@ stopping_criterion = 1e-6
 
 # Define the demand functions for the two products
 def demand(p, a, b):
-    return a - b * p
+    return a + b * p
 
 # Define the gradient of the objective function
 def gradient(p):
