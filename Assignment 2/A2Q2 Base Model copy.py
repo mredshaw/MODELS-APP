@@ -8,7 +8,7 @@ players_df['Average'] = players_df.iloc[:, 2:].mean(axis=1)
 
 # Filter players with average skill above 2.05 (without resetting the index)
 filtered_players_df = players_df[players_df['Average'] > 2.05]
-players_df= players_df.drop(columns=['Average'])
+filtered_players_df= filtered_players_df.drop(columns=['Average'])
 
 
 # Number of players
