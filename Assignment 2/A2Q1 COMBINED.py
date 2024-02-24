@@ -39,7 +39,6 @@ else:
 
 
 
-
 print("\n")
 print("####################################################### PART A: ONLY 2 INITIAL PRODUCTS #######################################################")
 print("\n")
@@ -218,8 +217,6 @@ model.setObjective(revenue, GRB.MAXIMIZE)
 for i in range(len(df)):
     demand = intercepts[i] - sensitivities[i] * prices[i]
     model.addConstr(demand <= capacities[i], name=f'capacity_{i}')
-
-
 
 #Add constraints for price ordering within each product line
 num_products_per_line = 3
