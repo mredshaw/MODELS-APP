@@ -29,6 +29,13 @@ m.setParam('OutputFlag', 0) # Suppress Gurobi output
 p1 = m.addVar(lb=0, name="p1")
 p2 = m.addVar(lb=0, name="p2")
 m.addConstr(p2 >= p1, "price_ordering")
+m.addConstr(a1 - b1 * p1 >= 0, "DemandNonNegativityBasic")
+m.addConstr(a2 - b2 * p2 >= 0, "DemandNonNegativityAdvanced")
+m.addConstr(p2 >= p1, "PriceOrdering")
+m.addConstr(a1 >=0, "BasicDemandNonNegativity")
+m.addConstr(a2 >=0, "AdvancedDemandNonNegativity")
+m.addConstr(b1 >=0, "BasicSlopeNonNegativity")
+m.addConstr(b2 >=0, "AdvancedSlopeNonNegativity")
 iteration_counter = 0
 
 # Start the projected gradient descent algorithm
