@@ -20,11 +20,14 @@ stopping_criterion = 1e-6
 
 # Define the demand functions for the two products
 def demand(p, a, b):
-    return a + b * p
+    return a - b * p
 
 # Define the gradient of the objective function
 def gradient(p):
-    return np.array([a1 - 2 * b1 * p[0], a2 - 2 * b2 * p[1]])
+    return np.array([
+        a1 - 2 * b1 * p[0],  # Partial derivative with respect to p1
+        a2 - 2 * b2 * p[1]   # Partial derivative with respect to p2
+    ])
 
 # Initialize the prices
 prices = initial_prices
@@ -83,5 +86,3 @@ print("\n")
 print(f'The model ran {iteration_counter} iterations.')
 print("Optimal prices found:", prices)
 print("Optimal revenue:", revenues[-1])
-
-
