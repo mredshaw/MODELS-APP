@@ -9,6 +9,7 @@ intercepts = df['Intercept'].to_numpy()
 sensitivities = abs(df['Sensitivity'].to_numpy())
 capacities = df['Capacity'].to_numpy()
 
+#Set the intercepts and sensitivities for the two products
 a1, a2, b1, b2 = intercepts[0], intercepts[1], sensitivities[0], sensitivities[1]
 
 # Create a new model

@@ -78,7 +78,7 @@ while True:
     
     # Update the prices
     prices = projected_prices
-    if iteration_counter % 10 == 0:  # Print every 10 iterations to track progress
+    if iteration_counter % 15 == 0:  # Print every 15 iterations to track progress
         print(f'Iteration {iteration_counter}: Prices = {prices}, Revenue = {current_revenue}')
 
 # Print the final prices and revenue
