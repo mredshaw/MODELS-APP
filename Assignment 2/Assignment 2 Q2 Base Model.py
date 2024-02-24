@@ -2,7 +2,7 @@ import pandas as pd
 from gurobipy import Model, GRB
 
 # Read the player data
-players_df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 2/BasketballPlayers.csv')
+players_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/BasketballPlayers.csv')
 
 # Number of players
 num_players = len(players_df)

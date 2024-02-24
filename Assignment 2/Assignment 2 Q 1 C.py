@@ -2,7 +2,7 @@ import pandas as pd
 from gurobipy import Model, GRB
 
 # Load the dataset
-df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/price_response.csv')  # Change to your file's path
+df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/price_response.csv')  # Change to your file's path
 
 # Create a Gurobi model
 model = Model('Maximize Revenue Within Line Constraints')
