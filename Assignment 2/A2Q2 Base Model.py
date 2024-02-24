@@ -4,6 +4,11 @@ from gurobipy import Model, GRB
 # Read the player data
 players_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/BasketballPlayers.csv')
 
+players_df['Average'] = players_df.iloc[:, 2:].mean(axis=1)
+players_df = players_df[players_df['Average'] > 2.05]
+players_df= players_df.drop(columns=['Average'])
+players_df = players_df.reset_index(drop=True)
+
 # Number of players
 num_players = len(players_df)
 
