@@ -101,7 +101,7 @@ print("######################################################## PART C #########
 
 # Load the dataset
 
-df = pd.read_csv('/Users/mikeredshaw/Documents/Schulich MBAN/Models & Applications/Assignment 2/price_response.csv')  # Change to your file's path
+df = pd.read_csv('https://github.com/mredshaw/MODELS-APP/blob/main/price_response.csv')  # Change to your file's path
 
 # Create a Gurobi model
 model = Model('Maximize Revenue Within Line Constraints')
