@@ -23,6 +23,12 @@ def gradient(p):
 # Initialize the prices
 prices = initial_prices
 
+# Create the Gurobi model and variables outside of the loop
+m = Model('Projection')
+p1 = m.addVar(lb=0, name="p1")
+p2 = m.addVar(lb=0, name="p2")
+m.addConstr(p2 >= p1, "price_ordering")
+
 # Start the projected gradient descent algorithm
 while True:
     # Compute the gradient at the current prices
@@ -31,21 +37,11 @@ while True:
     # Take a step in the direction of the gradient
     new_prices = prices + step_size * grad
     
-    # Define a quadratic model in Gurobi to project the prices onto the feasible set
-    m = Model('Projection')
-    
-    # Add variables for the projected prices
-    p1 = m.addVar(lb=0, name="p1")
-    p2 = m.addVar(lb=0, name="p2")
-    
-    # Add the constraint that p2 should be higher than p1
-    m.addConstr(p2 >= p1, "price_ordering")
-    
-    # Set the objective to minimize the distance to the new prices obtained from the gradient step
+    # Update the model with the new objective function
     m.setObjective((p1 - new_prices[0])*(p1 - new_prices[0]) +
                    (p2 - new_prices[1])*(p2 - new_prices[1]),
                    GRB.MINIMIZE)
-    
+
     # Optimize the model
     m.optimize()
     
@@ -60,5 +56,5 @@ while True:
     prices = projected_prices
 
 # Print the final prices
-print(prices)
+print("Optimal prices found:", prices)
 
