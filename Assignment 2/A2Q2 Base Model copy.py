@@ -54,7 +54,7 @@ model.setObjective(sum(filtered_players_df.loc[i, skill] * x[i] for i in filtere
 model.optimize()
 
 # Print the selected players and their details
-selected_players = [i for i in filtered_players_df.index if x[i].X > 0.5]
+selected_players = [i for i in filtered_players_df.index if x[i].X == 1]
 count_guards = sum(1 for i in selected_players if i in guards)
 count_forwards_centers = sum(1 for i in selected_players if i in forwards_centers)
 total_selected = len(selected_players)
@@ -64,3 +64,6 @@ for i in selected_players:
 print(f"Total guards selected: {count_guards}")
 print(f"Total forwards/centers selected: {count_forwards_centers}")
 print(f"Total players selected: {total_selected}")
+
+# Print the value of the objective function
+print(f"Value of objective function: {model.ObjVal}")
