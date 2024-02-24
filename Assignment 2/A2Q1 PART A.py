@@ -26,6 +26,7 @@ m.optimize()
 
 # Print the optimal prices
 if m.status == GRB.OPTIMAL:
+    print(f"Maximum Revenue: ${m.ObjVal:.2f}")  # Print the objective value
     print(f"Optimal Price for Basic Version (p1): ${p1.X:.2f}")
     print(f"Optimal Price for Advanced Version (p2): ${p2.X:.2f}")
 else:
