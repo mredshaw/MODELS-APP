@@ -17,8 +17,8 @@ p2 = m.addVar(name="p2", lb=0)  # Price for Advanced version
 m.setObjective(p1 * (a1 - b1 * p1) + p2 * (a2 - b2 * p2), GRB.MAXIMIZE)
 
 # Add constraints
-m.addConstr(a1 + b1 * p1 >= 0, "DemandNonNegativityBasic")
-m.addConstr(a2 + b2 * p2 >= 0, "DemandNonNegativityAdvanced")
+m.addConstr(a1 - b1 * p1 >= 0, "DemandNonNegativityBasic")
+m.addConstr(a2 - b2 * p2 >= 0, "DemandNonNegativityAdvanced")
 m.addConstr(p2 >= p1, "PriceOrdering")
 m.addConstr(a1 >=0, "BasicDemandNonNegativity")
 m.addConstr(a2 >=0, "AdvancedDemandNonNegativity")
