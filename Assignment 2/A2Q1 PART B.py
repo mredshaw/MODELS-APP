@@ -25,12 +25,15 @@ prices = initial_prices
 
 # Create the Gurobi model and variables outside of the loop
 m = Model('Projection')
+m.setParam('OutputFlag', 0) # Suppress Gurobi output
 p1 = m.addVar(lb=0, name="p1")
 p2 = m.addVar(lb=0, name="p2")
 m.addConstr(p2 >= p1, "price_ordering")
+iteration_counter = 0
 
 # Start the projected gradient descent algorithm
 while True:
+    iteration_counter += 1  # Increment the counter
     # Compute the gradient at the current prices
     grad = gradient(prices)
     
@@ -54,7 +57,11 @@ while True:
     
     # Update the prices
     prices = projected_prices
+    if iteration_counter % 10 == 0:  # Print every 10 iterations
+        print(f'Iteration {iteration_counter}: Prices = {prices}')
 
 # Print the final prices
+print("\n")
+print(f'The model ran {iteration_counter} iterations.')
 print("Optimal prices found:", prices)
 
