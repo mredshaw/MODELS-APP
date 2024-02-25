@@ -41,7 +41,9 @@ model.addConstr(sum(x[i] for i in filtered_players_df.index if 20 <= filtered_pl
 
 # If any player from 105-114 (inclusive) is invited, at least one player from 45-49 (inclusive) and 65-69 (inclusive) must be invited
 for i in [idx for idx in filtered_players_df.index if 105 <= filtered_players_df.loc[idx, 'Number'] <= 114]:
-    model.addConstr(x[i] <= sum(x[j] for j in filtered_players_df.index if 45 <= filtered_players_df.loc[j, 'Number'] <= 49) + sum(x[k] for k in filtered_players_df.index if 65 <= filtered_players_df.loc[k, 'Number'] <= 69), f"Group_105_114_requires_{i}")
+    model.addConstr(x[i] <= sum(x[j] for j in filtered_players_df.index if 45 <= filtered_players_df.loc[j, 'Number'] <= 49), f"Group_105_114_requires_45_49_for_{i}")
+    model.addConstr(x[i] <= sum(x[k] for k in filtered_players_df.index if 65 <= filtered_players_df.loc[k, 'Number'] <= 69), f"Group_105_114_requires_65_69_for_{i}")
+
 
 
 # At least one player must be invited from: 1-10, 11-20, 21-30, ..., 131-140, 141-150
