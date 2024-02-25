@@ -1,6 +1,9 @@
 import pandas as pd
 from gurobipy import Model, GRB
 
+
+print("\n####################################### PART H: FINDING MINIMUM INVITATIONS POSSIBLE #######################################################################\n")
+
 # Read the player data
 players_df = pd.read_csv('https://raw.githubusercontent.com/mredshaw/MODELS-APP/main/Assignment%202/BasketballPlayers.csv')
 
@@ -72,6 +75,16 @@ for i in range(num_players, 0, -1):
     model.update()
     model.optimize()
 
+    # Find the selected players
+    selected_players = [i for i in filtered_players_df.index if x[i].X > 0.5]
+
+# Print the details of the selected players
+    print("Selected players:")
+    for player in selected_players:
+        player_data = filtered_players_df.loc[player]
+        print(f"Player Number: {player_data['Number']}, Position: {player_data['Position']}")
+
+
     if model.status == GRB.INFEASIBLE:
         infeasible_constraint = model.getConstrs()[model.getConstrs().index(last_feasible_solution) + 1].ConstrName
         break
@@ -82,6 +95,22 @@ for i in range(num_players, 0, -1):
             last_feasible_solution = model.getConstrs()[model.getConstrs().index(last_feasible_solution) + 1]
 
 
-print(f"Minimum number of players that can be selected without causing infeasibility: {min_players_selected}")
+print(f"Value of the objective function (total number of players selected): {model.ObjVal}")
 if infeasible_constraint:
     print(f"The constraint that caused infeasibility: {infeasible_constraint}")
+
+print("\n####################################### FINDING WHAT CONSTRAINTS WOULD CAUSE INFEASIBILITY #######################################################################\n")
+
+model.addConstr(total_players_selected <= model.ObjVal - 1, "Reduced_Player_Selection")
+
+model.optimize()
+
+
+if model.status == GRB.INFEASIBLE:
+    print("Model is infeasible. Identifying the problematic constraint(s)...")
+    model.computeIIS()
+    for c in model.getConstrs():
+        if c.IISConstr:
+            print(f"Constraint causing infeasibility: {c.ConstrName}")
+
+
