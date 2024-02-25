@@ -79,6 +79,8 @@ print("\n")
 print("####################################################### PART B: GRADIENT DESCENT METHOD #######################################################")
 print("\n")    
 
+m = Model("TechEssentials Pricing Gradient Descent")
+
 a1, a2, b1, b2 = intercepts[0], intercepts[1], sensitivities[0], sensitivities[1]
 
 # Define the initial prices for both products
