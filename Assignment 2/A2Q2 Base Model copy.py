@@ -33,7 +33,7 @@ model.addConstr(sum(x[i] for i in guards) >= 0.3 * total_players_selected, "Min_
 model.addConstr(sum(x[i] for i in forwards_centers) >= 0.4 * total_players_selected, "Min_40_percent_forwards_centers")
 
 # Limit the total number of invitations to 21
-model.addConstr(total_players_selected == 21, "Total_Invitations_Limit")
+model.addConstr(total_players_selected <= 21, "Total_Invitations_Limit")
 
 # If any player from 20-24 (inclusive) is invited, all players from 72-78 (inclusive) cannot be, and vice versa
 model.addConstr(sum(x[i] for i in filtered_players_df.index if 20 <= filtered_players_df.loc[i, 'Number'] <= 24) + sum(x[j] for j in filtered_players_df.index if 72 <= filtered_players_df.loc[j, 'Number'] <= 78) <= 1, "Group_20_24_vs_72_78")
