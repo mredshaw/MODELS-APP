@@ -63,6 +63,11 @@ selected_players = [i for i in filtered_players_df.index if x[i].X == 1]
 count_guards = sum(1 for i in selected_players if i in guards)
 count_forwards_centers = sum(1 for i in selected_players if i in forwards_centers)
 total_selected = len(selected_players)
+num_decision_variables = len(filtered_players_df)
+
+
+print(f"Number of decision variables: {num_decision_variables}")
+
 print("Selected players and their positions:")
 for i in selected_players:
     print(f"Player {i}: {filtered_players_df.loc[i, 'Position']}")
