@@ -87,3 +87,7 @@ if model.Status == GRB.OPTIMAL:
             print(f"{food}: {quantity} grams")
 else:
     print("No optimal solution found.")
+
+print(f"Number of decision variables: {len(model.getVars())}")
+print(f"Number of constraints: {len(model.getConstrs())}")
+
