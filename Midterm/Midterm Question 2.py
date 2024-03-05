@@ -19,27 +19,21 @@ N = len(df)
 
 # Decision variables
 a = model.addVars(N, lb=0, vtype=GRB.CONTINUOUS, name="a")
-e = model.addVars(N, lb=0, vtype=GRB.CONTINUOUS, name="e")
-z = model.addVars(N, lb=0, vtype=GRB.CONTINUOUS, name="z")  # New variable for square root term
+x = model.addVars(N, lb=0, vtype=GRB.CONTINUOUS, name="x")  # Variable for fractional exponent
 
 # Objective function
-model.setObjective(gp.quicksum(2 * z[i] for i in range(N)), GRB.MAXIMIZE)
+model.setObjective(gp.quicksum(2 * x[i] for i in range(N)), GRB.MAXIMIZE)
 
 # Constraints
 # Budget Constraint
 model.addConstr(gp.quicksum(a[i] for i in range(N)) <= budget, "Budget")
 
-# Square root term constraint
+# Power constraint using addGenConstrPow()
 for i in range(N):
-    model.addConstr(z[i] * z[i] <= e[i] * beta[i] * a[i], f"SqrtConstraint_{i}")
-
-for i in range(N):
-    model.addConstr(e[i] * beta[i] * a[i] == z[i] * z[i], f"EffortLevel_{i}")
-
+    model.addGenConstrPow(a[i], x[i], 2.0/3.0, f"PowConstraint_{i}")
 
 
 # Optimize the model
-
 model.optimize()
 
 # Check the optimization status
@@ -59,4 +53,3 @@ elif model.Status == GRB.UNBOUNDED:
     print("Model is unbounded.")
 else:
     print(f"Optimization was stopped with status {model.Status}")
-
