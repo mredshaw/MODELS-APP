@@ -28,6 +28,7 @@ model.setObjective(gp.quicksum(2 * x[i] for i in range(N)), GRB.MAXIMIZE)
 # Budget Constraint
 model.addConstr(gp.quicksum(a[i] for i in range(N)) <= budget, "Budget")
 
+
 # Power constraint using addGenConstrPow()
 for i in range(N):
     model.addGenConstrPow(a[i], x[i], 2.0/3.0, f"PowConstraint_{i}")
@@ -57,7 +58,14 @@ else:
 
 print(f"Number of constraints: {model.NumConstrs}") 
 print(f"Number of decision variables: {model.NumVars}")
+# Sum of decision variables
+decision_variable_sum = sum(v.x for v in model.getVars())
+print(f"Sum of decision variables: {decision_variable_sum}")
+nonzero_decision_variables = sum(1 for v in model.getVars() if v.x != 0)
+print(f"Number of nonzero decision variables: {nonzero_decision_variables}")
 
-# Sum of decision variables in the optimal solution
-sum_decision_variables = sum(v.x for v in model.getVars())
-print(f"Sum of decision variables: {sum_decision_variables}")
+print(f"Number of non-zero decision variables for 'a': {sum(1 for v in model.getVars() if v.varName.startswith('a') and v.x != 0)}")
+
+
+
+
