@@ -18,19 +18,16 @@ model = gp.Model('NonprofitFunding')
 N = len(df)
 
 # Decision variables
+# Decision variables
 a = model.addVars(N, lb=0, vtype=GRB.CONTINUOUS, name="a")
-x = model.addVars(N, lb=0, vtype=GRB.CONTINUOUS, name="x")  # Variable for fractional exponent
+# No need for x as the power constraint can be directly enforced
 
 # Objective function
-model.setObjective(gp.quicksum(2 * x[i] for i in range(N)), GRB.MAXIMIZE)
+model.setObjective(gp.quicksum(2 * a[i]**(2.0/3.0) for i in range(N)), GRB.MAXIMIZE)
 
 # Constraints
 # Budget Constraint
 model.addConstr(gp.quicksum(a[i] for i in range(N)) <= budget, "Budget")
-
-# Power constraint using addGenConstrPow()
-for i in range(N):
-    model.addGenConstrPow(a[i], x[i], 2.0/3.0, f"PowConstraint_{i}")
 
 
 # Optimize the model
