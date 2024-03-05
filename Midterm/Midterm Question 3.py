@@ -25,6 +25,7 @@ model = gp.Model('ICU_Nurse_Scheduling')
 # Decision variables
 x = model.addVars(N, SHIFTS_PER_WEEK, vtype=GRB.BINARY, name="x")
 o = model.addVars(N, vtype=GRB.INTEGER, name="o")
+y = model.addVar(vtype=GRB.INTEGER, name="Overtime Shifts")
 
 # Objective function
 model.setObjective(
@@ -52,8 +53,10 @@ for i in range(N):
         model.addConstr(x[i, j] + x[i, j + 1] <= 1, f"NoBackToBack_Nurse{i}_Shift{j}")
 
 # Overtime shifts calculation
+
 for i in range(N):
     model.addConstr(o[i] >= gp.quicksum(x[i, j] for j in range(SHIFTS_PER_WEEK)) - MIN_HOURS / HOURS_PER_SHIFT, f"Overtime_Nurse{i}")
+    model.addConstr(y == gp.quicksum(o[i] for i in range(N)), "TotalOvertime") # Updated constraint
 
 # Optimize the model
 model.optimize()
@@ -64,9 +67,17 @@ if model.Status == GRB.OPTIMAL:
     for i in range(N):
         for j in range(SHIFTS_PER_WEEK):
             if x[i, j].X > 0.5:
-                print(f"Nurse {i} (Category: {Category[i]}) works shift {j}")
+                if o[i].X > 0:
+                    print(f"Nurse {i} (Category: {Category[i]}) works shift {j} (Overtime)")
+                else:
+                    print(f"Nurse {i} (Category: {Category[i]}) works shift {j} (Regular)")
 else:
     print("No optimal solution found.")
 
 print(f"Total cost: {model.ObjVal}")
-print("Overtime shifts:")
+print(f"Total overtime shifts: {y.X}")
+
+print(f"Decision Variables: {sum(v.x for v in model.getVars())}")
+
+
+
