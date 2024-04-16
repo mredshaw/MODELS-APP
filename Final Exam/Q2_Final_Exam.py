@@ -29,13 +29,14 @@ gallons_used = [
     165
 ]
 
+big_M = max(gallons_used)
 # Decision Variables
 x = model.addVar(vtype=GRB.CONTINUOUS, name="Preorder")
 y_phil = model.addVars(len(probabilities), vtype=GRB.CONTINUOUS, name="Phil")
 y_rosso = model.addVars(len(probabilities), vtype=GRB.CONTINUOUS, name="Rosso")
 y_monogram = model.addVars(len(probabilities), vtype=GRB.CONTINUOUS, name="Monogram")
-b_rosso = model.addVars(len(probabilities), vtype=GRB.BINARY, name="B_Rosso")
-b_monogram = model.addVars(len(probabilities), vtype=GRB.BINARY, name="B_Monogram")
+b_rosso = model.addVars(len(probabilities), vtype=GRB.BINARY, name="B_Rosso") #Set to ensure minimum order is satisfied
+b_monogram = model.addVars(len(probabilities), vtype=GRB.BINARY, name="B_Monogram") #Set to ensure minimum order is satisfied
 
 # Objective Function
 model.setObjective(
@@ -54,12 +55,19 @@ for n in range(len(probabilities)):
     model.addConstr(y_monogram[n] >= min_order_monogram * b_monogram[n], name=f"Min_Order_Monogram_{n}")
 
     # Additional constraints to avoid ordering below minimum if the binary variable is on
-    model.addConstr(y_rosso[n] <= (max(gallons_used) - min_order_rosso) * b_rosso[n], name=f"Max_Order_Rosso_{n}")
-    model.addConstr(y_monogram[n] <= (max(gallons_used) - min_order_monogram) * b_monogram[n], name=f"Max_Order_Monogram_{n}")
+    model.addConstr(y_rosso[n] <= big_M * b_rosso[n], name=f"Max_Order_Rosso_{n}")
+    model.addConstr(y_monogram[n] <= big_M * b_monogram[n], name=f"Max_Order_Monogram_{n}")
+
 
 # Solve the model
 model.optimize()
 
+
+if model.status == GRB.OPTIMAL:
+    optimal_cost = model.ObjVal
+    print("Optimal Cost:", optimal_cost)
+else:
+    print("Model is infeasible! No optimal cost found.")
 # Output the solution
 if model.status == GRB.OPTIMAL:
     print(f"Optimal gallons to preorder: {x.X}")
@@ -70,3 +78,6 @@ if model.status == GRB.OPTIMAL:
         print(f"\tMonogram: {y_monogram[n].X} gallons")
 else:
     print("No optimal solution found")
+
+num_decision_vars = model.NumVars
+print("Minimum number of decision variables:", num_decision_vars)
