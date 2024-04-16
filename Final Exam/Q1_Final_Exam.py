@@ -19,7 +19,7 @@ print("Shape of demand DataFrame:", demand.shape)
 
 # Decision Variables
 x = model.addVars(supply.shape[0], vtype=GRB.BINARY, name="Open_Plant")
-y = model.addVars(supply.shape[0], demand.shape[0], vtype=GRB.CONTINUOUS, name="Energy_Supplied")
+y = model.addVars(supply.shape[0], demand.shape[0], vtype=GRB.INTEGER, name="Energy_Supplied")
 
 
 fixed_cost = gb.quicksum(supply.loc[i, "Fixed"] * x[i] for i in supply.index)
@@ -61,10 +61,10 @@ for j in range(demand.shape[0]):  # For each province
 model.optimize()
 
 if model.status == GRB.OPTIMAL:
-    print("Optimal solution found.")
-    # Now safe to access y[i, j].x
+    optimal_cost = model.ObjVal
+    print("Optimal Cost:", optimal_cost)
 else:
-    print("No optimal solution found.")
+    print("Model is infeasible! No optimal cost found.")
 
 
 # Print Opened Plants (x_i)
@@ -81,6 +81,7 @@ for i in supply.index:
             print(f"Plant {i+1} to Province {j+1}: {y[i, j].x:.2f}")
 
 
+print("#" * 40)
 # Calculate Total Output (All Sites) 
 total_output_all = 0
 for i in supply.index:
@@ -125,3 +126,61 @@ for j in demand.index:
 for i in supply.index:
     total_supply_plant_i = sum(y[i, j].x for j in range(10))
     print(f"Plant {i+1} Capacity: {supply.loc[i, 'Capacity']}, Supply: {total_supply_plant_i} (Pass: {total_supply_plant_i <= supply.loc[i, 'Capacity']})")
+
+num_decision_vars = model.NumVars
+print("Minimum number of decision variables:", num_decision_vars)
+
+
+if model.status == GRB.OPTIMAL:
+    open_plants = sum(x[i].x > 0.5 for i in supply.index)
+    print("Number of power plants established:", open_plants) 
+else:
+    print("Model is infeasible! Cannot determine the number of opened plants.")
+
+
+
+
+if model.status == GRB.OPTIMAL:
+    plants_per_province = []
+    for province_index in range(demand.shape[0]):
+        num_plants_supplying = sum(y[i, province_index].x > 0 for i in supply.index)
+        plants_per_province.append(num_plants_supplying)
+
+    highest_count = max(plants_per_province)
+    lowest_count = min(plants_per_province)
+
+    print("Highest number of plants supplying a province:", highest_count)
+    print("Lowest number of plants supplying a province:", lowest_count) 
+else:
+    print("Model is infeasible! Cannot analyze energy distribution.")
+
+
+model.optimize() # Assuming you've already solved the model initially
+
+if model.status == GRB.OPTIMAL:
+    optimal_value = model.ObjVal
+    tolerance = 0.01  
+
+    # New variable for the objective value
+    obj_value = model.addVar(lb=-GRB.INFINITY, name="objective_value") 
+    model.setObjective(obj_value, GRB.MINIMIZE) # Or GRB.MAXIMIZE if needed
+
+    # Constrain the objective value
+    model.addConstr(obj_value >= optimal_value * (1 - tolerance))
+    model.addConstr(obj_value <= optimal_value * (1 + tolerance))
+
+
+    # Parameter Settings
+    model.setParam("PoolSearchMode", 2)  
+    model.setParam("PoolSolutions", 100) 
+
+    # Find Alternative Solutions
+    model.optimize()
+
+    print(f"Number of feasible solutions within 1% of optimal: {model.SolCount}")
+
+    for i in range(model.SolCount):
+        model.setParam("SolutionNumber", i)
+        print(f"Solution {i+1} Objective Value: {model.PoolObjVal}")
+    else:
+        print("Original model is infeasible. Cannot search for alternate solutions.")
