@@ -81,3 +81,85 @@ else:
 
 num_decision_vars = model.NumVars
 print("Minimum number of decision variables:", num_decision_vars)
+
+
+
+
+
+
+# Define a function to run the optimization for different pre-order prices
+def find_break_even_preorder_price(low_price, high_price, increment):
+    current_price = low_price
+    while current_price <= high_price:
+        # Set the pre-order price
+        price_preorder = current_price
+
+        # Update the objective function with the new price
+        model.setObjective(
+            price_preorder * x +
+            quicksum(probabilities[n] * (price_phil * y_phil[n] +
+                                         price_rosso * y_rosso[n] +
+                                         price_monogram * y_monogram[n])
+                     for n in range(len(probabilities))),
+            GRB.MINIMIZE
+        )
+
+        # Solve the model
+        model.optimize()
+
+        # Check if we're still ordering any coffee in advance
+        if x.X == 0:
+            # Found the break-even point
+            return current_price
+        
+        # Increment the price
+        current_price += increment
+
+    return "No break-even point found within the given price range."
+
+# Example usage: find the break-even price between $95 and $200, checking every 5 cents
+break_even_price = find_break_even_preorder_price(95, 200, 0.05)
+print(f"Break-even preorder price: ${break_even_price:.2f}")
+
+
+# Assuming you've already solved the stochastic model and stored the objective value as 'optimal_cost'
+
+# Calculate the Expected Value with Perfect Foresight (WS)
+ws = sum(probabilities[n] * (gallons_used[n] * price_preorder) for n in range(len(probabilities)))
+
+# Calculate EVPI
+evpi = optimal_cost - ws
+
+print(f"Expected Value with Perfect Foresight (WS): {ws}")
+print(f"Expected Value of Perfect Information (EVPI): {evpi}")
+
+
+# Calculate the average demand
+average_demand = sum(probabilities[n] * gallons_used[n] for n in range(len(probabilities)))
+
+# Solve the deterministic model using the average demand
+mean_model = Model("MeanValueProblem")
+x_mean = mean_model.addVar(vtype=GRB.CONTINUOUS, name="Preorder")
+
+# Objective function - only preordering cost since we assume average demand is always met
+mean_model.setObjective(price_preorder * x_mean, GRB.MINIMIZE)
+
+# Average demand constraint - we need to have enough coffee for the average demand
+mean_model.addConstr(x_mean >= average_demand, name="Average_Demand")
+
+# Solve the model
+mean_model.optimize()
+
+# EEV is the objective value of solving the mean value problem
+eev = mean_model.ObjVal if mean_model.status == GRB.OPTIMAL else None
+
+# EVSS is the objective value from the original stochastic solution
+evss = optimal_cost
+
+# Calculate VSS
+vss = evss - eev if eev is not None else None
+
+print(f"Expected Ex-ante Value (EEV): {eev}")
+print(f"Value of the Stochastic Solution (VSS): {vss}")
+
+
